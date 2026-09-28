@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>portraitdigital.t.me</title>
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --panel: #111113;
+    --line: #1f1f23;
+    --line-soft: #17171a;
+    --text: #ededef;
+    --muted: #6e6e78;
+    --dim: #46464f;
+    --focus: #2a2a30;
+    --error-text: #d98a8a;
+    --status-pending-bg: #3a2f0a; --status-pending-text: #facc15;
+    --status-in-progress-bg: #0a2a3a; --status-in-progress-text: #38bdf8;
+    --status-completed-bg: #0a2a15; --status-completed-text: #4ade80;
+    --status-materials-bg: #2a1a3a; --status-materials-text: #c084fc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: ui-sans-serif, -apple-system, 'Segoe UI', Inter, sans-serif;
+    background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    display: flex; justify-content: center; padding: 40px 20px; min-height: 100vh;
+  }
+  .shell {
+    width: 100%; max-width: 460px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 8px; overflow: hidden; align-self: flex-start;
+  }
+  .head {
+    display: flex; align-items: center; gap: 10px; padding: 16px 20px;
+    border-bottom: 1px solid var(--line); text-decoration: none; color: inherit; transition: background .14s;
+  }
+  .head:hover { background: #141417; }
+  .head:hover .name { color: var(--text); }
+  .mark { width: 22px; height: 22px; border: 1px solid var(--dim); border-radius: 5px; position: relative; flex-shrink: 0; }
+  .mark::after { content: ''; position: absolute; inset: 5px; background: var(--text); border-radius: 1px; }
+  .name { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 13px; color: var(--muted); transition: color .14s; }
+  .head .arrow { margin-left: auto; color: var(--dim); font-size: 13px; font-family: ui-monospace, monospace; }
+  .body { padding: 22px 20px; min-height: 200px; }
+  .label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  input[type="text"], input[type="password"], textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: 11px 13px; color: var(--text); font-size: 14px; font-family: inherit; outline: none;
+    transition: border-color .12s, background .12s;
+  }
+  textarea { resize: vertical; min-height: 100px; line-height: 1.55; }
+  input::placeholder, textarea::placeholder { color: var(--dim); }
+  input:focus, textarea:focus { border-color: var(--focus); background: #0d0d0f; }
+  .row { margin-bottom: 16px; position: relative; }
+  .btn {
+    width: 100%; padding: 11px; background: var(--text); color: #0a0a0b;
+    border: 1px solid var(--text); border-radius: 6px; font-size: 13.5px; font-weight: 550;
+    font-family: inherit; cursor: pointer; transition: opacity .12s;
+  }
+  .btn:hover:not(:disabled) { opacity: .88; }
+  .btn:active:not(:disabled) { opacity: .75; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight: 450; }
+  .btn-ghost:hover { color: var(--text); border-color: var(--dim); opacity: 1; }
+  .meta { font-size: 12px; color: var(--dim); margin-top: 12px; text-align: center; font-family: ui-monospace, monospace; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 14px; background: var(--bg); border: 1px solid var(--line);
+    border-radius: 6px; margin-bottom: 20px;
+  }
+  .topbar .who { font-size: 13px; color: var(--muted); }
+  .topbar .who b { color: var(--text); font-weight: 550; font-family: ui-monospace, monospace; font-size: 12.5px; }
+  .exit {
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    font-family: ui-monospace, monospace; font-size: 11px; padding: 4px 9px;
+    border-radius: 4px; cursor: pointer; transition: all .12s;
+  }
+  .exit:hover { color: var(--text); border-color: var(--dim); }
+  .tag {
+    font-family: ui-monospace, monospace; font-size: 10.5px; color: var(--dim);
+    border: 1px solid var(--line); padding: 2px 7px; border-radius: 4px;
+    margin-left: 8px; text-transform: uppercase; letter-spacing: 0.04em; display: inline-block;
+  }
+  .tag-main-operator { color: #facc15; border-color: #facc15; }
+  .tag-user { color: #38bdf8; border-color: #38bdf8; }
+  .tag-not-approved { color: #f87171; border-color: #f87171; }
+  .section-h {
+    font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 12px; font-family: ui-monospace, monospace;
+  }
+  .item {
+    border: 1px solid var(--line); border-radius: 6px; padding: 13px 15px;
+    margin-bottom: 9px; background: var(--bg); animation: fadeIn .3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .item-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+  .item-top .from { font-family: ui-monospace, monospace; font-size: 12.5px; color: var(--text); }
+  .item-top .when { font-size: 11px; color: var(--dim); font-family: ui-monospace, monospace; }
+  .item .msg { font-size: 13.5px; color: #b8b8c0; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+  .item-status { font-size: 11px; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-top: 7px; }
+  .item-status.status-pending { background: var(--status-pending-bg); color: var(--status-pending-text); }
+  .item-status.status-in-progress { background: var(--status-in-progress-bg); color: var(--status-in-progress-text); }
+  .item-status.status-completed { background: var(--status-completed-bg); color: var(--status-completed-text); }
+  .item-status.status-materials { background: var(--status-materials-bg); color: var(--status-materials-text); }
+  .item-actions { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+  .item-actions button, .item-actions input {
+    background: var(--line-soft); color: var(--muted); border: 1px solid var(--line);
+    padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+  }
+  .item-actions input { cursor: text; width: 100%; }
+  .item-actions button:hover { background: var(--focus); color: var(--text); border-color: var(--focus); }
+  .item-actions button.danger { color: #f87171; border-color: #7f1d1d; }
+  .item-actions button.danger:hover { background: #7f1d1d; color: #fff; }
+  .none { padding: 32px 0; text-align: center; color: var(--dim); font-size: 13px; font-family: ui-monospace, monospace; }
+  .err { color: var(--error-text); font-size: 12.5px; margin-top: 8px; min-height: 16px; }
+  .info { color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+  .pass-wrap { position: relative; }
+  .pass-toggle {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--dim); cursor: pointer;
+    font-size: 14px; padding: 4px 6px;
+  }
+  .pass-toggle:hover { color: var(--text); }
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #1f1f23; color: var(--text); padding: 11px 18px; border-radius: 8px;
+    border: 1px solid #2a2a30; font-size: 13px; z-index: 999; opacity: 0;
+    transition: all .25s ease; pointer-events: none; max-width: 90%;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.ok { border-color: #166534; }
+  #toast.err { border-color: #7f1d1d; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <a class="head" href="https://t.me/portraitdigital" target="_blank" rel="noopener noreferrer">
+    <div class="mark"></div>
+    <span class="name">portraitdigital.t.me</span>
+    <span class="arrow">↗</span>
+  </a>
+  <div class="body" id="app">
+    <div class="none">Загрузка…</div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-app.js";
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/11.8.0/firebase-auth.js";
+import {
+  getFirestore, doc, setDoc, getDoc, updateDoc, collection,
+  addDoc, getDocs, query, where, deleteDoc
+} from "https://www.gstatic.com/firebasejs/11.8.0/firebase-firestore.js";
+
+/* === FIREBASE CONFIG === */
+const firebaseConfig = {
+  apiKey: "AIzaSyDPev6S3AB-x3P17we28B8A5lExxAQOdCc",
+  authDomain: "portrait-digital.firebaseapp.com",
+  projectId: "portrait-digital",
+  storageBucket: "portrait-digital.firebasestorage.app",
+  messagingSenderId: "822814348389",
+  appId: "1:822814348389:web:a1dc1909cf58607f46e28c"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+
+/* === КОНСТАНТЫ === */
+const MAIN_ADMIN = 'newerwhyplant';
+const EMAIL_DOMAIN = '@portraitdigital.local';
+
+/* === УТИЛИТЫ === */
+const app = document.getElementById('app');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = u => { u = (u||'').trim().replace(/^@/, ''); return u; };
+const usernameToEmail = u => u.toLowerCase() + EMAIL_DOMAIN;
+const fmtDate = iso => new Date(iso).toLocaleString('ru-RU', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+
+function toast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(t._tm);
+  t._tm = setTimeout(() => t.className = '', 2600);
+}
+
+function setLoading(btn, on, text = 'Загрузка…') {
+  if (!btn) return;
+  if (on) { btn._old = btn.textContent; btn.textContent = text; btn.disabled = true; }
+  else { btn.textContent = btn._old; btn.disabled = false; }
+}
+
+const STATUS_NAMES = {
+  pending: 'Ожидает',
+  'in-progress': 'В работе',
+  completed: 'Выполнено',
+  materials: 'Запрошены материалы'
+};
+const statusName = s => STATUS_NAMES[s] || 'Неизвестно';
+
+/* === СОСТОЯНИЕ === */
+let currentProfile = null;
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { currentProfile = null; viewLogin(); return; }
+  const ref = doc(db, 'users', user.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    await signOut(auth);
+    return;
+  }
+  const data = snap.data();
+  currentProfile = { uid: user.uid, username: data.username, isApproved: data.isApproved, role: data.role };
+  route();
+});
+
+function route() {
+  if (!currentProfile) return viewLogin();
+  if (currentProfile.username.toLowerCase() === MAIN_ADMIN.toLowerCase()) return viewAdmin();
+  if (currentProfile.isApproved) return viewUser();
+  return viewPending();
+}
+
+/* === ЭКРАН ЛОГИНА === */
+function viewLogin() {
+  app.innerHTML = `
+    <div class="row">
+      <label class="label">Ваш юзернейм в Telegram</label>
+      <input type="text" id="u" placeholder="@username" autocomplete="off" spellcheck="false">
+      <div class="err" id="uErr"></div>
+    </div>
+    <div class="row">
+      <label class="label">Пароль</label>
+      <div class="pass-wrap">
+        <input type="password" id="p" placeholder="Введите пароль">
+        <button type="button" class="pass-toggle" data-for="p">👁</button>
+      </div>
+      <div class="err" id="pErr"></div>
+    </div>
+    <button class="btn" id="loginBtn">Войти</button>
+    <div class="meta" style="margin-top:20px;">
+      Нет аккаунта?
+      <button class="btn btn-ghost" id="toReg" style="width:auto;padding:5px 10px;margin-top:0;font-size:12px;font-weight:400;">Зарегистрироваться</button>
+    </div>
+  `;
+  const uEl = app.querySelector('#u'), pEl = app.querySelector('#p');
+  const uErr = app.querySelector('#uErr'), pErr = app.querySelector('#pErr');
+
+  uEl.oninput = () => uErr.textContent = '';
+  pEl.oninput = () => pErr.textContent = '';
+
+  app.querySelectorAll('.pass-toggle').forEach(b => {
+    b.onclick = () => {
+      const inp = app.querySelector('#' + b.dataset.for);
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    };
+  });
+
+  app.querySelector('#toReg').onclick = () => viewRegister();
+  app.querySelector('#loginBtn').onclick = async () => {
+    const u = norm(uEl.value), p = pEl.value;
+    if (u.length < 2) return uErr.textContent = 'Введите юзернейм';
+    if (p.length < 6) return pErr.textContent = 'Минимум 6 символов';
+    const btn = app.querySelector('#loginBtn');
+    setLoading(btn, true, 'Вход…');
+    try {
+      await signInWithEmailAndPassword(auth, usernameToEmail(u), p);
+    } catch (e) {
+      setLoading(btn, false);
+      const code = e.code || '';
+      if (code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')) {
+        pErr.textContent = 'Неверный юзернейм или пароль';
+      } else if (code.includes('too-many-requests')) {
+        pErr.textContent = 'Слишком много попыток, подождите';
+      } else {
+        pErr.textContent = 'Ошибка: ' + code;
+      }
+    }
+  };
+  uEl.focus();
+}
+
+/* === ЭКРАН РЕГИСТРАЦИИ === */
+function viewRegister() {
+  app.innerHTML = `
+    <div class="row">
+      <label class="label">Ваш юзернейм в Telegram</label>
+      <input type="text" id="u" placeholder="@username" autocomplete="off" spellcheck="false">
+      <div class="err" id="uErr"></div>
+    </div>
+    <div class="row">
+      <label class="label">Пароль (мин. 6 символов)</label>
+      <div class="pass-wrap">
+        <input type="password" id="p" placeholder="пароль">
+        <button type="button" class="pass-toggle" data-for="p">👁</button>
+      </div>
+      <div class="err" id="pErr"></div>
+    </div>
+    <div class="row">
+      <label class="label">Повторите пароль</label>
+      <div class="pass-wrap">
+        <input type="password" id="cp" placeholder="повторите">
+        <button type="button" class="pass-toggle" data-for="cp">👁</button>
+      </div>
+      <div class="err" id="cpErr"></div>
+    </div>
+    <button class="btn" id="regBtn">Зарегистрироваться</button>
+    <div class="meta" style="margin-top:20px;">
+      Уже есть аккаунт?
+      <button class="btn btn-ghost" id="toLog" style="width:auto;padding:5px 10px;margin-top:0;font-size:12px;font-weight:400;">Войти</button>
+    </div>
+  `;
+  const uEl = app.querySelector('#u'), pEl = app.querySelector('#p'), cpEl = app.querySelector('#cp');
+  const uErr = app.querySelector('#uErr'), pErr = app.querySelector('#pErr'), cpErr = app.querySelector('#cpErr');
+
+  uEl.oninput = () => uErr.textContent = '';
+  pEl.oninput = () => pErr.textContent = '';
+  cpEl.oninput = () => cpErr.textContent = '';
+
+  app.querySelectorAll('.pass-toggle').forEach(b => {
+    b.onclick = () => {
+      const inp = app.querySelector('#' + b.dataset.for);
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    };
+  });
+
+  app.querySelector('#toLog').onclick = () => viewLogin();
+  app.querySelector('#regBtn').onclick = async () => {
+    const u = norm(uEl.value), p = pEl.value, cp = cpEl.value;
+    if (u.length < 2) return uErr.textContent = 'Введите юзернейм';
+    if (!/^[a-zA-Z0-9_]{2,32}$/.test(u)) return uErr.textContent = 'Только буквы, цифры и _ (2–32)';
+    if (p.length < 6) return pErr.textContent = 'Минимум 6 символов';
+    if (p !== cp) return cpErr.textContent = 'Пароли не совпадают';
+
+    const btn = app.querySelector('#regBtn');
+    setLoading(btn, true, 'Создание…');
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, usernameToEmail(u), p);
+      const isAdmin = u.toLowerCase() === MAIN_ADMIN.toLowerCase();
+      await setDoc(doc(db, 'users', cred.user.uid), {
+        username: u,
+        isApproved: isAdmin,
+        role: isAdmin ? 'admin' : 'user',
+        createdAt: new Date().toISOString()
+      });
+      toast('Аккаунт создан', 'ok');
+    } catch (e) {
+      setLoading(btn, false);
+      const code = e.code || '';
+      if (code.includes('email-already-in-use')) uErr.textContent = 'Этот юзернейм уже занят';
+      else if (code.includes('weak-password')) pErr.textContent = 'Пароль слишком слабый';
+      else if (code.includes('operation-not-allowed')) pErr.textContent = 'Включите Email/Password в Firebase';
+      else uErr.textContent = 'Ошибка: ' + code;
+    }
+  };
+  uEl.focus();
+}
+
+/* === ВЫХОД === */
+const logoutBtnHtml = `<button class="exit" id="out">выйти</button>`;
+function bindLogout() {
+  const b = app.querySelector('#out');
+  if (b) b.onclick = async () => { await signOut(auth); toast('Выход', 'ok'); };
+}
+
+/* === ЭКРАН ОЖИДАЮЩЕГО === */
+function viewPending() {
+  app.innerHTML = `
+    <div class="topbar">
+      <span class="who">Вы вошли как <b>${esc(currentProfile.username)}</b><span class="tag tag-not-approved">не одобрен</span></span>
+      ${logoutBtnHtml}
+    </div>
+    <div class="info">Ваша учётная запись ожидает одобрения администратора.<br>Свяжитесь с ним: <b>@${MAIN_ADMIN}</b></div>
+  `;
+  bindLogout();
+}
+
+/* === ЭКРАН ЮЗЕРА === */
+async function viewUser() {
+  app.innerHTML = `<div class="none">Загрузка заявок…</div>`;
+  const myReqs = await loadMyRequests();
+  app.innerHTML = `
+    <div class="topbar">
+      <span class="who">Вы вошли как <b>${esc(currentProfile.username)}</b><span class="tag tag-user">участник</span></span>
+      ${logoutBtnHtml}
+    </div>
+    <div class="row">
+      <label class="label">Опишите задачу</label>
+      <textarea id="msg" placeholder="Изложите суть…"></textarea>
+      <div class="err" id="msgErr"></div>
+    </div>
+    <button class="btn" id="sendBtn">Отправить заявку</button>
+    <div class="section-h" style="margin-top:30px;">Мои заявки · ${myReqs.length}</div>
+    <div id="list">
+      ${myReqs.length ? myReqs.map(r => itemHtml(r, false)).join('') : '<div class="none">Пока нет заявок</div>'}
+    </div>
+  `;
+  bindLogout();
+  const msg = app.querySelector('#msg'), msgErr = app.querySelector('#msgErr');
+  msg.oninput = () => msgErr.textContent = '';
+  app.querySelector('#sendBtn').onclick = async () => {
+    const txt = msg.value.trim();
+    if (!txt) return msgErr.textContent = 'Поле не может быть пустым';
+    const btn = app.querySelector('#sendBtn');
+    setLoading(btn, true, 'Отправка…');
+    try {
+      await addDoc(collection(db, 'requests'), {
+        from: currentProfile.username,
+        fromUid: currentProfile.uid,
+        text: txt,
+        at: new Date().toISOString(),
+        status: 'pending',
+        assignedTo: null,
+        materials: '',
+        adminNotes: ''
+      });
+      toast('Заявка отправлена', 'ok');
+      viewUser();
+    } catch (e) {
+      setLoading(btn, false);
+      toast('Ошибка: ' + e.code, 'err');
+    }
+  };
+  msg.focus();
+}
+
+async function loadMyRequests() {
+  const q = query(collection(db, 'requests'), where('fromUid', '==', currentProfile.uid));
+  const snap = await getDocs(q);
+  const arr = [];
+  snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+  return arr.sort((a, b) => new Date(b.at) - new Date(a.at));
+}
+
+function itemHtml(r, admin) {
+  return `
+    <div class="item" data-id="${r.id}">
+      <div class="item-top">
+        <span class="from">от <b>${esc(r.from)}</b></span>
+        <span class="when">${fmtDate(r.at)}</span>
+      </div>
+      <div class="msg">${esc(r.text)}</div>
+      <div class="item-status status-${r.status}">Статус: ${statusName(r.status)}</div>
+      ${r.assignedTo ? `<div class="info">Назначено: ${esc(r.assignedTo)}</div>` : ''}
+      ${r.adminNotes ? `<div class="info">Комментарий: ${esc(r.adminNotes)}</div>` : ''}
+      ${r.materials ? `<div class="info"><b>Материалы:</b> ${esc(r.materials)}</div>` : ''}
+      ${admin ? `
+      <div class="item-actions">
+        <button data-act="assign">${r.assignedTo && r.assignedTo.toLowerCase() === currentProfile.username.toLowerCase() ? 'Отказаться' : 'Назначить себе'}</button>
+        <button data-act="in-progress">В работе</button>
+        <button data-act="completed">Выполнено</button>
+        <input data-input="materials" placeholder="Материалы / данные">
+        <button data-act="materials">Запросить материалы</button>
+        <input data-input="note" placeholder="Комментарий">
+        <button data-act="note">Сохранить комментарий</button>
+        <button data-act="del" class="danger">Удалить</button>
+      </div>` : ''}
+    </div>
+  `;
+}
+
+/* === ЭКРАН АДМИНА === */
+async function viewAdmin() {
+  app.innerHTML = `<div class="none">Загрузка…</div>`;
+
+  const usersSnap = await getDocs(collection(db, 'users'));
+  const allUsers = [];
+  usersSnap.forEach(d => allUsers.push({ uid: d.id, ...d.data() }));
+  const pendingUsers = allUsers.filter(u => !u.isApproved && u.username.toLowerCase() !== MAIN_ADMIN.toLowerCase());
+
+  const reqSnap = await getDocs(collection(db, 'requests'));
+  const allReqs = [];
+  reqSnap.forEach(d => allReqs.push({ id: d.id, ...d.data() }));
+  allReqs.sort((a, b) => new Date(b.at) - new Date(a.at));
+
+  app.innerHTML = `
+    <div class="topbar">
+      <span class="who">Вы вошли как <b>${esc(currentProfile.username)}</b><span class="tag tag-main-operator">админ</span></span>
+      ${logoutBtnHtml}
+    </div>
+
+    <div class="section-h">Неодобренные · ${pendingUsers.length}</div>
+    <div id="pendList">
+      ${pendingUsers.length ? pendingUsers.map(u => `
+        <div class="item" data-uid="${u.uid}">
+          <div class="item-top"><span class="from"><b>${esc(u.username)}</b></span></div>
+          <div class="item-actions">
+            <button data-act="approve">Одобрить</button>
+            <button data-act="del" class="danger">Удалить</button>
+          </div>
+        </div>
+      `).join('') : '<div class="none">Нет заявок на одобрение</div>'}
+    </div>
+
+    <div class="section-h" style="margin-top:30px;">Все заявки · ${allReqs.length}</div>
+    <div id="reqList">
+      ${allReqs.length ? allReqs.map(r => itemHtml(r, true)).join('') : '<div class="none">Заявок нет</div>'}
+    </div>
+  `;
+  bindLogout();
+
+  app.querySelectorAll('#pendList .item').forEach(el => {
+    const uid = el.dataset.uid;
+    el.querySelectorAll('button[data-act]').forEach(b => {
+      b.onclick = async () => {
+        if (b.dataset.act === 'approve') {
+          await updateDoc(doc(db, 'users', uid), { isApproved: true, role: 'user' });
+          toast('Одобрен', 'ok'); viewAdmin();
+        } else if (b.dataset.act === 'del') {
+          if (!confirm('Удалить пользователя?')) return;
+          await deleteDoc(doc(db, 'users', uid));
+          toast('Удалён', 'ok'); viewAdmin();
+        }
+      };
+    });
+  });
+
+  app.querySelectorAll('#reqList .item').forEach(el => {
+    const id = el.dataset.id;
+    el.querySelectorAll('button[data-act]').forEach(b => {
+      b.onclick = async () => {
+        const act = b.dataset.act;
+        const ref = doc(db, 'requests', id);
+        if (act === 'assign') {
+          const isMine = b.textContent.includes('Отказаться');
+          await updateDoc(ref, { assignedTo: isMine ? null : currentProfile.username });
+        } else if (act === 'in-progress') {
+          await updateDoc(ref, { status: 'in-progress', materials: '' });
+        } else if (act === 'completed') {
+          await updateDoc(ref, { status: 'completed', materials: '' });
+        } else if (act === 'materials') {
+          const v = el.querySelector('[data-input="materials"]').value.trim();
+          await updateDoc(ref, { status: 'materials', materials: v });
+        } else if (act === 'note') {
+          const v = el.querySelector('[data-input="note"]').value.trim();
+          await updateDoc(ref, { adminNotes: v });
+        } else if (act === 'del') {
+          if (!confirm('Удалить заявку?')) return;
+          await deleteDoc(ref);
+        }
+        viewAdmin();
+      };
+    });
+  });
+}
+</script>
+</body>
+</html>
