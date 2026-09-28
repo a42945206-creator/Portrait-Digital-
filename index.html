@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>portraitdigital.t.me</title>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a0a0b">
 <style>
@@ -303,6 +301,15 @@
 <div id="ptr">⟳</div>
 
 <script type="module">
+  window.addEventListener('error', (e) => {
+  const t = document.getElementById('toast');
+  if (t) { t.textContent = '⚠️ ' + (e.message || 'Ошибка'); t.className = 'show err'; setTimeout(()=>t.className='', 7000); }
+});
+window.addEventListener('unhandledrejection', (e) => {
+  const t = document.getElementById('toast');
+  const msg = (e.reason && (e.reason.message || e.reason.code)) || 'Ошибка Promise';
+  if (t) { t.textContent = '⚠️ ' + msg; t.className = 'show err'; setTimeout(()=>t.className='', 7000); }
+});
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-app.js";
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
