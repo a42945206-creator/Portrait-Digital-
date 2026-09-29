@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>portraitdigital.t.me</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0a0b">
+<style>
+  :root {
+    --bg: #0a0a0b; --panel: #111113; --line: #1f1f23; --line-soft: #17171a;
+    --text: #ededef; --muted: #6e6e78; --dim: #46464f; --focus: #2a2a30;
+    --error-text: #d98a8a; --accent: #4ade80; --accent-2: #38bdf8;
+    --accent-3: #facc15; --accent-4: #c084fc;
+    --status-pending-bg: #3a2f0a; --status-pending-text: #facc15;
+    --status-in-progress-bg: #0a2a3a; --status-in-progress-text: #38bdf8;
+    --status-completed-bg: #0a2a15; --status-completed-text: #4ade80;
+    --status-materials-bg: #2a1a3a; --status-materials-text: #c084fc;
+  }
+  [data-theme="light"] {
+    --bg: #f5f5f7; --panel: #ffffff; --line: #e5e5ea; --line-soft: #f0f0f3;
+    --text: #1a1a1c; --muted: #6e6e78; --dim: #a0a0a8; --focus: #d0d0d8;
+    --error-text: #c0392b;
+  }
+  [data-theme="purple"] {
+    --bg: #10091a; --panel: #180d26; --line: #38204d; --line-soft: #241334;
+    --text: #f5eaff; --muted: #b99acb; --dim: #795c8c; --focus: #573274;
+    --error-text: #ff8fa3; --accent: #c084fc; --accent-2: #a855f7;
+  }
+  [data-theme="green"] {
+    --bg: #07140d; --panel: #0c1d14; --line: #193d2a; --line-soft: #10291c;
+    --text: #e8fff1; --muted: #9bc5aa; --dim: #527a61; --focus: #28563c;
+    --error-text: #ff9292; --accent: #4ade80; --accent-2: #22c55e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: ui-sans-serif, -apple-system, 'Segoe UI', Inter, sans-serif;
+    background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    display: flex; justify-content: center; padding: 40px 14px 20px; min-height: 100vh;
+    transition: background .25s, color .25s; overscroll-behavior-y: contain;
+  }
+  .shell {
+    width: 100%; max-width: 460px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+    align-self: flex-start; position: relative; animation: shellIn .35s ease;
+    display: flex; flex-direction: column; min-height: 70vh;
+  }
+  @keyframes shellIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .head {
+    display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .mark { width: 20px; height: 20px; border: 1px solid var(--dim); border-radius: 5px; position: relative; flex-shrink: 0; }
+  .mark::after { content: ''; position: absolute; inset: 4px; background: var(--text); border-radius: 1px; }
+  .name { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12.5px; color: var(--muted); }
+  .head .right { margin-left: auto; display: flex; gap: 6px; }
+  .icon-btn {
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; transition: all .14s;
+    position: relative;
+  }
+  .icon-btn:hover { color: var(--text); border-color: var(--dim); }
+  .icon-btn .dot {
+    position: absolute; top: -3px; right: -3px; min-width: 14px; height: 14px;
+    background: #ef4444; border-radius: 8px; color: #fff; font-size: 9px;
+    display: flex; align-items: center; justify-content: center; padding: 0 3px;
+    font-family: ui-monospace, monospace; font-weight: 600;
+  }
+  .body { padding: 18px 16px 24px; flex: 1; }
+  .label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  input[type="text"], input[type="password"], textarea, select {
+    width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: 11px 13px; color: var(--text); font-size: 14px; font-family: inherit; outline: none;
+    transition: border-color .12s, background .12s;
+  }
+  textarea { resize: vertical; min-height: 80px; line-height: 1.55; }
+  input::placeholder, textarea::placeholder { color: var(--dim); }
+  input:focus, textarea:focus { border-color: var(--focus); }
+  .row { margin-bottom: 14px; position: relative; }
+  .btn {
+    width: 100%; padding: 11px; background: var(--text); color: var(--panel);
+    border: 1px solid var(--text); border-radius: 6px; font-size: 13.5px; font-weight: 550;
+    font-family: inherit; cursor: pointer; transition: opacity .12s;
+  }
+  .btn:hover:not(:disabled) { opacity: .88; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight: 450; }
+  .btn-ghost:hover { color: var(--text); border-color: var(--dim); opacity: 1; }
+  .btn.sm { width: auto; padding: 6px 12px; font-size: 12px; }
+  .meta { font-size: 12px; color: var(--dim); margin-top: 10px; text-align: center; font-family: ui-monospace, monospace; }
+
+  .topbar {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 6px; margin-bottom: 14px;
+  }
+  .topbar .who { font-size: 12.5px; color: var(--muted); flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; cursor: pointer; }
+  .topbar .who:hover b { color: var(--accent-2); }
+  .topbar .who b { color: var(--text); font-weight: 550; font-family: ui-monospace, monospace; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color .12s; }
+  .nick-edit { background: transparent; border: none; color: var(--dim); cursor: pointer; padding: 2px 4px; margin-left: 4px; font-size: 13px; border-radius: 4px; vertical-align: middle; }
+  .nick-edit:hover { color: var(--text); background: var(--line-soft); }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 13px; color: #fff; font-family: ui-monospace, monospace;
+    position: relative;
+  }
+  .avatar.sm { width: 24px; height: 24px; font-size: 10px; }
+  .avatar.xl { width: 72px; height: 72px; font-size: 28px; }
+  .avatar .online {
+    position: absolute; bottom: -1px; right: -1px; width: 10px; height: 10px;
+    background: var(--accent); border: 2px solid var(--panel); border-radius: 50%;
+  }
+  .exit {
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    font-family: ui-monospace, monospace; font-size: 11px; padding: 4px 9px;
+    border-radius: 4px; cursor: pointer; transition: all .12s;
+  }
+  .exit:hover { color: var(--text); border-color: var(--dim); }
+  .tag {
+    font-family: ui-monospace, monospace; font-size: 10px; color: var(--dim);
+    border: 1px solid var(--line); padding: 2px 6px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.04em; display: inline-block;
+  }
+  .tag-admin { color: var(--accent-3); border-color: var(--accent-3); }
+  .tag-user { color: var(--accent-2); border-color: var(--accent-2); }
+  .tag-pending { color: #f87171; border-color: #f87171; }
+  .tag-banned { color: #dc2626; border-color: #dc2626; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .tabs button {
+    background: transparent; border: none; color: var(--muted);
+    padding: 8px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit;
+    border-bottom: 2px solid transparent; transition: all .12s; position: relative;
+    white-space: nowrap;
+  }
+  .tabs button:hover { color: var(--text); }
+  .tabs button.active { color: var(--text); border-bottom-color: var(--text); }
+  .tabs button .dot {
+    position: absolute; top: 4px; right: 0; min-width: 14px; height: 14px;
+    background: #ef4444; border-radius: 8px; color: #fff; font-size: 9px;
+    display: flex; align-items: center; justify-content: center; padding: 0 3px;
+  }
+
+  .section-h {
+    font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 10px; font-family: ui-monospace, monospace;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-h .count {
+    background: var(--line-soft); border: 1px solid var(--line);
+    padding: 1px 6px; border-radius: 10px; font-size: 10px;
+  }
+  .filters { display: flex; gap: 5px; margin-bottom: 12px; flex-wrap: wrap; }
+  .filters button {
+    background: var(--line-soft); color: var(--muted); border: 1px solid var(--line);
+    padding: 5px 11px; border-radius: 20px; font-size: 11.5px; cursor: pointer;
+    font-family: ui-monospace, monospace; transition: all .14s;
+  }
+  .filters button:hover { color: var(--text); }
+  .filters button.active { background: var(--text); color: var(--panel); border-color: var(--text); }
+  .filters button .stat-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+  .item {
+    border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px;
+    margin-bottom: 9px; background: var(--bg); animation: fadeIn .3s ease;
+    cursor: default;
+  }
+  .item.clickable { cursor: pointer; }
+  .item.clickable:hover { border-color: var(--dim); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; gap: 8px; }
+  .item-top .left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+  .item-top .from { font-family: ui-monospace, monospace; font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-top .when { font-size: 10.5px; color: var(--dim); font-family: ui-monospace, monospace; flex-shrink: 0; }
+  .item .msg { font-size: 13.5px; color: var(--muted); line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+  .item-status { font-size: 10.5px; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-top: 7px; font-family: ui-monospace, monospace; }
+  .item .info-line { font-size: 11.5px; color: var(--muted); margin-top: 5px; font-family: ui-monospace, monospace; }
+  .item-actions { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; }
+  .item-actions button, .item-actions input, .item-actions select {
+    background: var(--line-soft); color: var(--muted); border: 1px solid var(--line);
+    padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s; font-family: inherit;
+  }
+  .item-actions input, .item-actions select { cursor: text; width: 100%; }
+  .item-actions button:hover { background: var(--focus); color: var(--text); border-color: var(--focus); }
+  .item-actions button.danger { color: #f87171; border-color: #7f1d1d; }
+  .item-actions button.danger:hover { background: #7f1d1d; color: #fff; }
+  .item-actions button.good { color: var(--accent); border-color: #166534; }
+  .item-actions button.good:hover { background: #166534; color: #fff; }
+  .item .unread-dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: #ef4444; margin-left: 6px; vertical-align: middle;
+  }
+  .none { padding: 28px 0; text-align: center; color: var(--dim); font-size: 12.5px; font-family: ui-monospace, monospace; }
+  .err { color: var(--error-text); font-size: 12px; margin-top: 6px; min-height: 15px; }
+  .info { color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+  .pass-wrap { position: relative; }
+  .pass-toggle {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--dim); cursor: pointer;
+    font-size: 14px; padding: 4px 6px;
+  }
+  .pass-toggle:hover { color: var(--text); }
+
+  /* chat */
+  .chat-wrap { display: flex; flex-direction: column; height: 60vh; min-height: 400px; }
+  .chat-head {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border: 1px solid var(--line); border-radius: 6px; margin-bottom: 10px; background: var(--bg);
+  }
+  .chat-head .back {
+    background: transparent; border: none; color: var(--muted); font-size: 18px;
+    cursor: pointer; padding: 0 6px;
+  }
+  .chat-head .back:hover { color: var(--text); }
+  .chat-head .title { font-weight: 550; font-size: 13px; font-family: ui-monospace, monospace; }
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 10px 4px; display: flex; flex-direction: column; gap: 8px;
+    border: 1px solid var(--line); border-radius: 6px; background: var(--bg); margin-bottom: 10px;
+  }
+  .msg-row { display: flex; gap: 8px; max-width: 85%; position: relative; }
+  .msg-row.mine { align-self: flex-end; flex-direction: row-reverse; }
+  .msg-bubble {
+    background: var(--line-soft); border: 1px solid var(--line);
+    border-radius: 10px; padding: 7px 11px; font-size: 13px;
+    word-break: break-word; white-space: pre-wrap; position: relative;
+  }
+  .msg-row.mine .msg-bubble { background: #1e3a5f; border-color: #2a4a75; color: #fff; }
+  [data-theme="light"] .msg-row.mine .msg-bubble { background: #dbeafe; border-color: #93c5fd; color: #1a1a1c; }
+  .msg-meta { font-size: 10px; color: var(--dim); margin-top: 3px; font-family: ui-monospace, monospace; }
+  .msg-reply-quote {
+    background: rgba(0,0,0,.15); border-left: 2px solid var(--accent-2);
+    padding: 4px 8px; margin-bottom: 4px; border-radius: 3px;
+    font-size: 11.5px; opacity: .85;
+  }
+  .msg-reactions {
+    display: flex; gap: 3px; margin-top: 4px; flex-wrap: wrap;
+  }
+  .msg-reactions .r {
+    background: rgba(255,255,255,.1); border-radius: 10px; padding: 1px 6px;
+    font-size: 11px; cursor: pointer; border: 1px solid transparent;
+    transition: all .12s;
+  }
+  .msg-reactions .r.mine { border-color: var(--accent-2); background: rgba(56,189,248,.15); }
+  .msg-reactions .r:hover { background: rgba(255,255,255,.18); }
+  .msg-actions {
+    position: absolute; top: -8px; right: 8px; display: none;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+    padding: 2px; gap: 2px; z-index: 5;
+  }
+  .msg-row:hover .msg-actions { display: flex; }
+  .msg-actions button {
+    background: transparent; border: none; color: var(--muted); cursor: pointer;
+    font-size: 12px; padding: 2px 5px; border-radius: 3px;
+  }
+  .msg-actions button:hover { background: var(--focus); color: var(--text); }
+  .chat-input { display: flex; gap: 6px; }
+  .chat-input input { flex: 1; }
+  .chat-input button {
+    background: var(--text); color: var(--panel); border: 1px solid var(--text);
+    border-radius: 6px; padding: 0 14px; cursor: pointer; font-size: 13px;
+    font-weight: 550;
+  }
+  .chat-input button:hover { opacity: .88; }
+  .reply-bar {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+    background: var(--line-soft); border: 1px solid var(--line); border-radius: 6px;
+    margin-bottom: 6px; font-size: 12px;
+  }
+  .reply-bar .txt { flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .reply-bar .x { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; }
+  .reply-bar .x:hover { color: var(--text); }
+
+  /* dashboard */
+  .dash { display: flex; flex-direction: column; gap: 14px; }
+  .dash-card {
+    border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: var(--bg);
+  }
+  .dash-card h3 {
+    font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 12px; font-family: ui-monospace, monospace;
+  }
+  .bar-chart { display: flex; align-items: flex-end; gap: 5px; height: 100px; }
+  .bar-chart .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar-chart .bar {
+    width: 100%; background: var(--accent-2); border-radius: 3px 3px 0 0;
+    transition: height .4s ease; min-height: 2px;
+  }
+  .bar-chart .lbl { font-size: 9px; color: var(--dim); font-family: ui-monospace, monospace; }
+  .bar-chart .val { font-size: 10px; color: var(--muted); font-family: ui-monospace, monospace; }
+  .stat-row { display: flex; justify-content: space-between; font-size: 12.5px; padding: 4px 0; border-bottom: 1px solid var(--line-soft); }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .name { color: var(--muted); font-family: ui-monospace, monospace; }
+  .stat-row .num { color: var(--text); font-family: ui-monospace, monospace; font-weight: 600; }
+
+  /* status manager */
+  .status-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+    border: 1px solid var(--line); border-radius: 6px; margin-bottom: 5px;
+    background: var(--bg);
+  }
+  .status-item .color-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .status-item .sname { flex: 1; font-size: 12.5px; font-family: ui-monospace, monospace; }
+  .status-item button { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 11px; }
+  .status-item button:hover { color: #f87171; }
+
+  /* profile modal */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; animation: fadeIn .2s;
+  }
+  .modal {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    max-width: 380px; width: 100%; padding: 22px; text-align: center;
+    position: relative; max-height: 90vh; overflow-y: auto;
+  }
+  .modal .close {
+    position: absolute; top: 10px; right: 12px; background: transparent;
+    border: none; color: var(--muted); font-size: 20px; cursor: pointer;
+  }
+  .modal .close:hover { color: var(--text); }
+  .modal .pname { font-size: 17px; font-weight: 600; margin: 12px 0 4px; font-family: ui-monospace, monospace; }
+  .modal .pmeta { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; margin-bottom: 4px; }
+  .modal .pstats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+    margin: 16px 0; padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  }
+  .modal .pstat b { display: block; font-size: 18px; font-weight: 600; font-family: ui-monospace, monospace; }
+  .modal .pstat span { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
+  .modal .pactions { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+
+  /* skeleton */
+  .skel {
+    background: linear-gradient(90deg, var(--line-soft) 25%, var(--line) 50%, var(--line-soft) 75%);
+    background-size: 200% 100%; animation: skel 1.4s ease-in-out infinite; border-radius: 6px;
+  }
+  @keyframes skel { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .skel-item { height: 70px; margin-bottom: 9px; }
+
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--panel); color: var(--text); padding: 11px 18px; border-radius: 8px;
+    border: 1px solid var(--line); font-size: 13px; z-index: 1100; opacity: 0;
+    transition: all .25s ease; pointer-events: none; max-width: 90%;
+    box-shadow: 0 4px 20px rgba(0,0,0,.3);
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.ok { border-color: #166534; }
+  #toast.err { border-color: #7f1d1d; }
+  #ptr {
+    position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-60px);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 50%;
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; z-index: 998; transition: transform .2s; pointer-events: none;
+  }
+  #ptr.show { transform: translateX(-50%) translateY(20px); }
+  #ptr.spin { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: translateX(-50%) translateY(20px) rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="head">
+    <div class="mark"></div>
+    <span class="name">portraitdigital.t.me</span>
+    <div class="right">
+      <button class="icon-btn" id="chatsBtn" title="Чаты">💬<span class="dot" id="chatsDot" style="display:none">0</span></button>
+      <button class="icon-btn" id="themeBtn" title="Тема">🌙</button>
+    </div>
+  </div>
+  <div class="body" id="app"><div class="none">Загрузка…</div></div>
+</div>
+<div id="toast"></div>
+<div id="ptr">⟳</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-app.js";
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  onAuthStateChanged, signOut, updateEmail, reauthenticateWithCredential, EmailAuthProvider
+} from "https://www.gstatic.com/firebasejs/11.8.0/firebase-auth.js";
+import {
+  getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc,
+  getDocs, query, where, deleteDoc, onSnapshot, orderBy, limit
+} from "https://www.gstatic.com/firebasejs/11.8.0/firebase-firestore.js";
+
+/* === FIREBASE CONFIG === */
+const firebaseConfig = {
+  apiKey: "AIzaSyDPev6S3AB-x3P17we28B8A5lExxAQOdCc",
+  authDomain: "portrait-digital.firebaseapp.com",
+  projectId: "portrait-digital",
+  storageBucket: "portrait-digital.firebasestorage.app",
+  messagingSenderId: "822814348389",
+  appId: "1:822814348389:web:a1dc1909cf58607f46e28c"
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+
+/* === КОНСТАНТЫ === */
+const MAIN_ADMIN = 'newerwhyplant';
+const EMAIL_DOMAIN = '@portraitdigital.local';
+const GENERAL_CHAT_ID = 'general';
+const MAX_REQ_PER_HOUR = 5;
+const ONLINE_WINDOW_MS = 5 * 60 * 1000;
+const SETTINGS_DOC = 'app_config';
+
+/* Стандартные статусы */
+const DEFAULT_STATUSES = [
+  { id: 'pending', name: 'Ожидает', color: '#facc15' },
+  { id: 'in-progress', name: 'В работе', color: '#38bdf8' },
+  { id: 'completed', name: 'Выполнено', color: '#4ade80' },
+  { id: 'materials', name: 'Материалы', color: '#c084fc' }
+];
+let CUSTOM_STATUSES = [...DEFAULT_STATUSES];
+
+/* === УТИЛИТЫ === */
+const app = document.getElementById('app');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm = u => (u||'').trim().replace(/^@/, '');
+const usernameToEmail = u => u.toLowerCase() + EMAIL_DOMAIN;
+const fmtDate = iso => new Date(iso).toLocaleString('ru-RU', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+const fmtTime = iso => new Date(iso).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
+const isOnline = ts => ts && (Date.now() - new Date(ts).getTime() < ONLINE_WINDOW_MS);
+
+function toast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(t._tm); t._tm = setTimeout(() => t.className = '', 2600);
+}
+function setLoading(btn, on, text = 'Загрузка…') {
+  if (!btn) return;
+  if (on) { btn._old = btn.textContent; btn.textContent = text; btn.disabled = true; }
+  else { btn.textContent = btn._old; btn.disabled = false; }
+}
+function statusName(s) {
+  const found = CUSTOM_STATUSES.find(x => x.id === s);
+  return found ? found.name : 'Неизвестно';
+}
+function statusColor(s) {
+  const found = CUSTOM_STATUSES.find(x => x.id === s);
+  return found ? found.color : '#6e6e78';
+}
+function statusBadgeHtml(s) {
+  const c = statusColor(s);
+  return `<span class="item-status" style="background:${c}22;color:${c};border:1px solid ${c}55">${esc(statusName(s))}</span>`;
+}
+
+/* === АВАТАРКИ === */
+const AVATAR_COLORS = ['#ef4444','#f97316','#eab308','#84cc16','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e'];
+function avatarColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+function avatarHtml(name, size = '', online = false) {
+  const cls = 'avatar' + (size ? ' ' + size : '');
+  const initial = (name || '?')[0].toUpperCase();
+  return `<div class="${cls}" style="background:${avatarColor(name)}">${initial}${online ? '<span class="online"></span>' : ''}</div>`;
+}
+
+/* === ТЕМА === */
+function applyTheme(t) {
+  const themes = {
+    dark: { icon: '🌙', color: '#0a0a0b', title: 'Тёмная тема' },
+    light: { icon: '☀️', color: '#f5f5f7', title: 'Светлая тема' },
+    purple: { icon: '🟣', color: '#10091a', title: 'Фиолетовая тема' },
+    green: { icon: '🟢', color: '#07140d', title: 'Зелёная тема' }
+  };
+  if (!themes[t]) t = 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('pd_theme', t);
+  const btn = document.getElementById('themeBtn');
+  if (btn) { btn.textContent = themes[t].icon; btn.title = themes[t].title; }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', themes[t].color);
+}
+function initTheme() {
+  const saved = localStorage.getItem('pd_theme');
+  if (saved) { applyTheme(saved); return; }
+  const sysLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(sysLight ? 'light' : 'dark');
+}
+/* авто-тема по времени суток, если юзер не выбирал вручную */
+(function autoTheme() {
+  if (localStorage.getItem('pd_theme')) return;
+  const h = new Date().getHours();
+  const night = h >= 21 || h < 7;
+  applyTheme(night ? 'dark' : 'light');
+})();
+document.getElementById('themeBtn').onclick = () => {
+  const themes = ['dark', 'light', 'purple', 'green'];
+  const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = themes[(themes.indexOf(cur) + 1) % themes.length];
+  applyTheme(next);
+};
+
+/* === ЗВУК === */
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 660; gain.gain.value = 0.06;
+    osc.start(); osc.stop(ctx.currentTime + 0.12);
+    setTimeout(() => ctx.close(), 300);
+  } catch (e) {}
+}
+
+/* === PWA === */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+/* === PULL-TO-REFRESH === */
+let ptrStart = 0;
+document.addEventListener('touchstart', e => { if (window.scrollY === 0) ptrStart = e.touches[0].clientY; });
+document.addEventListener('touchmove', e => {
+  if (ptrStart && window.scrollY === 0) {
+    const d = e.touches[0].clientY - ptrStart;
+    if (d > 60) document.getElementById('ptr').classList.add('show');
+  }
+});
+document.addEventListener('touchend', async () => {
+  const ptr = document.getElementById('ptr');
+  if (ptr.classList.contains('show')) {
+    ptr.classList.add('spin');
+    try { if (currentProfile) route(); }
+    finally { setTimeout(() => { ptr.classList.remove('show', 'spin'); ptrStart = 0; }, 600); }
+  }
+  ptrStart = 0;
+});
+
+/* === СОСТОЯНИЕ === */
+let currentProfile = null;
+let currentFilter = 'all';
+let currentView = 'main';
+let currentTab = 'requests';
+let activeChatId = null;
+let chatUnsub = null;
+let generalUnsub = null;
+let unreadCounts = {};
+let unreadGeneral = 0;
+let replyTo = null;
+
+/* === ЗАГРУЗКА СТАТУСОВ ИЗ FIRESTORE === */
+async function loadCustomStatuses() {
+  try {
+    const snap = await getDoc(doc(db, 'settings', SETTINGS_DOC));
+    if (snap.exists()) {
+      const data = snap.data();
+      if (Array.isArray(data.statuses) && data.statuses.length) {
+        CUSTOM_STATUSES = data.statuses;
+        return;
+      }
+    }
+  } catch (e) {}
+  CUSTOM_STATUSES = [...DEFAULT_STATUSES];
+}
+async function saveCustomStatuses(statuses) {
+  await setDoc(doc(db, 'settings', SETTINGS_DOC), { statuses }, { merge: true });
+  CUSTOM_STATUSES = statuses;
+}
+
+/* === AUTH === */
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { currentProfile = null; stopChatListener(); viewLogin(); return; }
+  const ref = doc(db, 'users', user.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) { await signOut(auth); return; }
+  const data = snap.data();
+  currentProfile = {
+    uid: user.uid, username: data.username,
+    isApproved: data.isApproved, role: data.role || 'user',
+    banned: !!data.banned, createdAt: data.createdAt || null,
+    lastSeen: data.lastSeen || null
+  };
+  updateDoc(ref, { lastSeen: new Date().toISOString() }).catch(()=>{});
+  setInterval(() => {
+    if (currentProfile) updateDoc(doc(db,'users',currentProfile.uid),{lastSeen:new Date().toISOString()}).catch(()=>{});
+  }, 60000);
+
+  if (currentProfile.banned) {
+    app.innerHTML = `<div class="none">🚫 Ваш аккаунт заблокирован.</div>`;
+    return;
+  }
+  await loadCustomStatuses();
+  subscribeGeneralUnread();
+  route();
+});
+
+function route() {
+  if (!currentProfile) return viewLogin();
+  if (currentView === 'chat' && activeChatId) return viewChat(activeChatId);
+  if (currentView === 'request' && activeChatId) return openRequest(activeChatId);
+  if (currentView === 'dashboard') return viewDashboard();
+  if (currentProfile.username.toLowerCase() === MAIN_ADMIN.toLowerCase() || currentProfile.role === 'admin') return viewAdmin();
+  if (currentProfile.isApproved) return viewUser();
+  return viewPending();
+}
+
+/* === unread для общего чата === */
+async function subscribeGeneralUnread() {
+  if (!currentProfile) return;
+  const chatRef = doc(db, 'chats', GENERAL_CHAT_ID);
+  const chatSnap = await getDoc(chatRef);
+  let lastRead = (chatSnap.exists() && chatSnap.data().reads && chatSnap.data().reads[currentProfile.uid]) || 0;
+  const msgRef = collection(db, 'chats', GENERAL_CHAT_ID, 'messages');
+  const q = query(msgRef, orderBy('at', 'desc'), limit(50));
+  if (generalUnsub) generalUnsub();
+  generalUnsub = onSnapshot(q, snap => {
+    let unread = 0;
+    snap.forEach(d => {
+      const m = d.data();
+      const at = new Date(m.at).getTime();
+      if (m.fromUid !== currentProfile.uid && at > lastRead) unread++;
+    });
+    unreadGeneral = unread;
+    updateChatsDot();
+  });
+}
+function updateChatsDot() {
+  const total = unreadGeneral + Object.values(unreadCounts).reduce((a,b)=>a+b,0);
+  const dot = document.getElementById('chatsDot');
+  if (total > 0) { dot.textContent = total > 99 ? '99+' : total; dot.style.display = 'flex'; }
+  else dot.style.display = 'none';
+}
+function stopChatListener() {
+  if (chatUnsub) { chatUnsub(); chatUnsub = null; }
+  if (generalUnsub) { generalUnsub(); generalUnsub = null; }
+}
+/* === ЕДИНЫЙ ЭКРАН ВХОДА/РЕГИСТРАЦИИ === */
+let loginMode = 'login';
+
+function viewLogin() {
+  loginMode = 'login';
+  renderAuthScreen();
+}
+
+function viewRegister() {
+  loginMode = 'register';
+  renderAuthScreen();
+}
+
+function renderAuthScreen() {
+  const isReg = loginMode === 'register';
+  app.innerHTML = `
+    <div style="text-align:center;margin-bottom:22px;">
+      <div class="avatar xl" style="background:var(--text);color:var(--panel);margin:0 auto 14px;font-size:32px;">🔒</div>
+      <div style="font-size:16px;font-weight:600;font-family:ui-monospace,monospace;">
+        ${isReg ? 'Создание аккаунта' : 'Вход'}
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+        ${isReg ? 'Придумайте юзернейм и пароль' : 'Введите юзернейм и пароль'}
+      </div>
+    </div>
+
+    <div class="row">
+      <label class="label">Юзернейм</label>
+      <input type="text" id="u" placeholder="@username" autocomplete="off" spellcheck="false" autocapitalize="off">
+      <div class="err" id="uErr"></div>
+    </div>
+
+    <div class="row">
+      <label class="label">Пароль ${isReg ? '(мин. 6 символов)' : ''}</label>
+      <div class="pass-wrap">
+        <input type="password" id="p" placeholder="••••••••">
+        <button type="button" class="pass-toggle" data-for="p">👁</button>
+      </div>
+      <div class="err" id="pErr"></div>
+    </div>
+
+    ${isReg ? `
+    <div class="row">
+      <label class="label">Повторите пароль</label>
+      <div class="pass-wrap">
+        <input type="password" id="cp" placeholder="повторите">
+        <button type="button" class="pass-toggle" data-for="cp">👁</button>
+      </div>
+      <div class="err" id="cpErr"></div>
+    </div>` : ''}
+
+    <button class="btn" id="submitBtn">${isReg ? 'Создать аккаунт' : 'Войти'}</button>
+
+    <div class="meta" style="margin-top:20px;">
+      ${isReg
+        ? `Уже есть аккаунт? <button class="btn btn-ghost" id="switchMode" style="width:auto;padding:5px 10px;margin-top:0;font-size:12px;font-weight:400;">Войти</button>`
+        : `Нет аккаунта? <button class="btn btn-ghost" id="switchMode" style="width:auto;padding:5px 10px;margin-top:0;font-size:12px;font-weight:400;">Создать</button>`}
+    </div>
+  `;
+
+  const uEl = app.querySelector('#u');
+  const pEl = app.querySelector('#p');
+  const cpEl = app.querySelector('#cp');
+  const uErr = app.querySelector('#uErr');
+  const pErr = app.querySelector('#pErr');
+  const cpErr = app.querySelector('#cpErr');
+  const submitBtn = app.querySelector('#submitBtn');
+
+  uEl.oninput = () => uErr.textContent = '';
+  pEl.oninput = () => pErr.textContent = '';
+  if (cpEl) cpEl.oninput = () => cpErr.textContent = '';
+
+  app.querySelectorAll('.pass-toggle').forEach(b => {
+    b.onclick = () => {
+      const i = app.querySelector('#' + b.dataset.for);
+      i.type = i.type === 'password' ? 'text' : 'password';
+    };
+  });
+
+  app.querySelector('#switchMode').onclick = () => {
+    loginMode = isReg ? 'login' : 'register';
+    renderAuthScreen();
+  };
+
+  submitBtn.onclick = async () => {
+    const u = norm(uEl.value);
+    const p = pEl.value;
+
+    if (u.length < 2) return uErr.textContent = 'Введите юзернейм';
+    if (!/^[a-zA-Z0-9_]{2,32}$/.test(u)) return uErr.textContent = 'Только буквы, цифры и _ (2–32)';
+    if (p.length < 6) return pErr.textContent = 'Минимум 6 символов';
+
+    if (isReg) {
+      const cp = cpEl.value;
+      if (p !== cp) return cpErr.textContent = 'Пароли не совпадают';
+      setLoading(submitBtn, true, 'Создание…');
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, usernameToEmail(u), p);
+        const isAdmin = u.toLowerCase() === MAIN_ADMIN.toLowerCase();
+        await setDoc(doc(db, 'users', cred.user.uid), {
+          username: u,
+          isApproved: isAdmin,
+          role: isAdmin ? 'admin' : 'user',
+          banned: false,
+          bio: '',
+          createdAt: new Date().toISOString(),
+          lastSeen: new Date().toISOString()
+        });
+        toast('Аккаунт создан', 'ok');
+      } catch (e) {
+        setLoading(submitBtn, false);
+        const c = e.code || '';
+        if (c.includes('email-already-in-use')) uErr.textContent = 'Этот юзернейм уже занят';
+        else if (c.includes('weak-password')) pErr.textContent = 'Пароль слишком слабый';
+        else if (c.includes('operation-not-allowed')) pErr.textContent = 'Включите Email/Password в Firebase';
+        else uErr.textContent = 'Ошибка: ' + c;
+      }
+      return;
+    }
+
+    setLoading(submitBtn, true, 'Вход…');
+    try {
+      await signInWithEmailAndPassword(auth, usernameToEmail(u), p);
+    } catch (e) {
+      setLoading(submitBtn, false);
+      const c = e.code || '';
+      if (c.includes('user-not-found')) {
+        uErr.innerHTML = `Юзернейм <b>@${esc(u)}</b> не найден.
+          <button class="btn btn-ghost" id="suggestReg" style="width:auto;padding:3px 8px;margin-top:6px;font-size:11px;font-weight:400;display:block;">Создать аккаунт с этим ником</button>`;
+        const sug = app.querySelector('#suggestReg');
+        if (sug) sug.onclick = () => {
+          loginMode = 'register';
+          renderAuthScreen();
+          setTimeout(() => {
+            const nu = app.querySelector('#u');
+            if (nu) nu.value = '@' + u;
+          }, 30);
+        };
+      } else if (c.includes('wrong-password') || c.includes('invalid-credential')) {
+        pErr.textContent = 'Неверный пароль';
+      } else if (c.includes('too-many-requests')) {
+        pErr.textContent = 'Слишком много попыток, подождите';
+      } else {
+        pErr.textContent = 'Ошибка: ' + c;
+      }
+    }
+  };
+
+  uEl.focus();
+}
+  
+/* === ВЫХОД === */
+const logoutBtnHtml = `<button class="exit" id="out">выйти</button>`;
+function bindLogout() {
+  const b = app.querySelector('#out');
+  if (b) b.onclick = async () => { stopChatListener(); await signOut(auth); toast('Выход', 'ok'); };
+}
+
+function topbarHtml(roleLabel, roleClass) {
+  return `
+    <div class="topbar">
+      <div class="who" id="openMyProfile">
+        ${avatarHtml(currentProfile.username, '', isOnline(currentProfile.lastSeen))}
+        <div style="min-width:0"><b>${esc(currentProfile.username)}</b><button class="nick-edit" id="editNickBtn" title="Изменить ник" aria-label="Изменить ник">✎</button>
+        <span class="tag ${roleClass}">${roleLabel}</span></div>
+      </div>
+      ${logoutBtnHtml}
+    </div>
+  `;
+}
+function bindTopbar() {
+  const m = app.querySelector('#openMyProfile');
+  if (m) m.onclick = (e) => { if (!e.target.closest('#editNickBtn')) openProfileModal(currentProfile.uid); };
+  const edit = app.querySelector('#editNickBtn');
+  if (edit) edit.onclick = async (e) => {
+    e.stopPropagation();
+    const next = norm(prompt('Новый ник (2–32 символа):', currentProfile.username));
+    if (!next || next === currentProfile.username) return;
+    if (!/^[a-zA-Z0-9_]{2,32}$/.test(next)) return toast('Только буквы, цифры и _ (2–32)', 'err');
+    const password = prompt('Введите текущий пароль для подтверждения:');
+    if (!password) return;
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+      const credential = EmailAuthProvider.credential(user.email, password);
+      await reauthenticateWithCredential(user, credential);
+      await updateEmail(user, usernameToEmail(next));
+      await updateDoc(doc(db, 'users', currentProfile.uid), { username: next });
+      currentProfile.username = next;
+      toast('Ник изменён', 'ok');
+      route();
+    } catch (err) {
+      const c = err.code || '';
+      if (c.includes('email-already-in-use')) toast('Этот ник уже занят', 'err');
+      else if (c.includes('wrong-password') || c.includes('invalid-credential')) toast('Неверный пароль', 'err');
+      else if (c.includes('requires-recent-login')) toast('Не удалось подтвердить вход. Войдите заново и повторите.', 'err');
+      else toast('Ошибка: ' + c, 'err');
+    }
+  };
+  bindLogout();
+}
+
+/* === ОЖИДАЮЩИЙ === */
+function viewPending() {
+  app.innerHTML = `${topbarHtml('не одобрен','tag-pending')}
+    <div class="info">Ваша учётная запись ожидает одобрения администратора.<br>Свяжитесь с ним: <b>@${MAIN_ADMIN}</b></div>`;
+  bindTopbar();
+}
+
+/* === ЮЗЕР === */
+async function viewUser() {
+  app.innerHTML = `<div class="skel skel-item"></div><div class="skel skel-item"></div>`;
+  const myReqs = await loadMyRequests();
+  const tabsHtml = `
+    <div class="tabs">
+      <button data-tab="requests" class="${currentTab==='requests'?'active':''}">Заявки</button>
+      <button data-tab="members" class="${currentTab==='members'?'active':''}">Участники</button>
+    </div>`;
+  app.innerHTML = `${topbarHtml('участник','tag-user')}${tabsHtml}<div id="tabContent"></div>`;
+  bindTopbar();
+  bindTabs();
+  if (currentTab === 'requests') renderUserRequests(myReqs);
+  else renderMembers();
+}
+
+function bindTabs() {
+  app.querySelectorAll('.tabs button').forEach(b => {
+    b.onclick = () => { currentTab = b.dataset.tab; viewUser(); };
+  });
+}
+
+function renderUserRequests(myReqs) {
+  const el = app.querySelector('#tabContent');
+  el.innerHTML = `
+    <div class="row">
+      <label class="label">Опишите задачу</label>
+      <textarea id="msg" placeholder="Изложите суть…"></textarea>
+      <div class="err" id="msgErr"></div>
+    </div>
+    <button class="btn" id="sendBtn">Отправить заявку</button>
+    <div class="section-h" style="margin-top:22px;">Мои заявки <span class="count">${myReqs.length}</span></div>
+    <div id="list">
+      ${myReqs.length ? myReqs.map(r => itemHtml(r, false)).join('') : '<div class="none">Пока нет заявок</div>'}
+    </div>
+  `;
+  const msg = el.querySelector('#msg'), msgErr = el.querySelector('#msgErr');
+  msg.oninput = () => msgErr.textContent = '';
+  el.querySelector('#sendBtn').onclick = async () => {
+    const txt = msg.value.trim();
+    if (!txt) return msgErr.textContent = 'Поле не может быть пустым';
+    const since = Date.now() - 3600*1000;
+    const recent = myReqs.filter(r => new Date(r.at).getTime() > since).length;
+    if (recent >= MAX_REQ_PER_HOUR) return msgErr.textContent = `Не больше ${MAX_REQ_PER_HOUR} заявок в час`;
+    const btn = el.querySelector('#sendBtn');
+    setLoading(btn, true, 'Отправка…');
+    try {
+      await addDoc(collection(db, 'requests'), {
+        from: currentProfile.username, fromUid: currentProfile.uid,
+        text: txt, at: new Date().toISOString(), status: 'pending',
+        assignedTo: null, materials: '', adminNotes: '',
+        lastReadByUser: new Date().toISOString()
+      });
+      toast('Заявка отправлена','ok'); viewUser();
+    } catch (e) { setLoading(btn,false); toast('Ошибка: ' + e.code,'err'); }
+  };
+  el.querySelectorAll('#list .item').forEach(item => {
+    item.classList.add('clickable');
+    item.onclick = (ev) => {
+      if (ev.target.closest('button') || ev.target.tagName === 'INPUT') return;
+      openRequest(item.dataset.id);
+    };
+  });
+}
+
+async function loadMyRequests() {
+  const q = query(collection(db, 'requests'), where('fromUid','==',currentProfile.uid));
+  const snap = await getDocs(q);
+  const arr = [];
+  snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+  return arr.sort((a,b) => new Date(b.at)-new Date(a.at));
+}
+
+function itemHtml(r, admin) {
+  const unread = admin && r.lastReadByAdmin && r.lastReadByUser && new Date(r.lastReadByUser) > new Date(r.lastReadByAdmin);
+  return `
+    <div class="item" data-id="${r.id}">
+      <div class="item-top">
+        <div class="left">${avatarHtml(r.from,'sm')}<span class="from">${esc(r.from)}</span></div>
+        <span class="when">${fmtDate(r.at)}${unread?'<span class="unread-dot"></span>':''}</span>
+      </div>
+      <div class="msg">${esc(r.text)}</div>
+      <div>${statusBadgeHtml(r.status)}</div>
+      ${r.assignedTo ? `<div class="info-line">→ ${esc(r.assignedTo)}</div>`:''}
+      ${r.adminNotes ? `<div class="info-line">💬 ${esc(r.adminNotes)}</div>`:''}
+      ${r.materials ? `<div class="info-line">📎 ${esc(r.materials)}</div>`:''}
+      ${admin ? `
+      <div class="item-actions">
+        <button data-act="assign">${r.assignedTo && r.assignedTo.toLowerCase()===currentProfile.username.toLowerCase()?'Отказаться':'Назначить себе'}</button>
+        <select data-input="status">
+          ${CUSTOM_STATUSES.map(s => `<option value="${s.id}" ${r.status===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}
+        </select>
+        <button data-act="set-status">Сменить статус</button>
+        <input data-input="materials" placeholder="Материалы / данные">
+        <button data-act="materials">Запросить материалы</button>
+        <input data-input="note" placeholder="Комментарий">
+        <button data-act="note">Сохранить</button>
+        <button data-act="del" class="danger">Удалить</button>
+      </div>` : ''}
+    </div>`;
+}
+
+/* === СПИСОК УЧАСТНИКОВ === */
+async function renderMembers() {
+  const el = app.querySelector('#tabContent');
+  el.innerHTML = `<div class="skel skel-item"></div><div class="skel skel-item"></div>`;
+  const snap = await getDocs(collection(db,'users'));
+  const users = [];
+  snap.forEach(d => users.push({ uid: d.id, ...d.data() }));
+  users.sort((a,b) => a.username.localeCompare(b.username));
+  el.innerHTML = `
+    <div class="row"><input type="text" id="searchUsers" placeholder="Поиск по нику…"></div>
+    <div class="section-h">Участники <span class="count">${users.length}</span></div>
+    <div id="usersList">
+      ${users.map(u => `
+        <div class="item clickable" data-uid="${u.uid}">
+          <div class="item-top">
+            <div class="left">
+              ${avatarHtml(u.username, 'sm', isOnline(u.lastSeen))}
+              <span class="from">${esc(u.username)}</span>
+              ${u.role==='admin'?'<span class="tag tag-admin">админ</span>':''}
+              ${!u.isApproved?'<span class="tag tag-pending">не одобрен</span>':''}
+              ${u.banned?'<span class="tag tag-banned">забанен</span>':''}
+            </div>
+            <span class="when">${isOnline(u.lastSeen)?'онлайн':(u.lastSeen?fmtDate(u.lastSeen):'')}</span>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  el.querySelector('#searchUsers').oninput = (e) => {
+    const q = e.target.value.toLowerCase();
+    el.querySelectorAll('#usersList .item').forEach(it => {
+      const name = it.querySelector('.from').textContent.toLowerCase();
+      it.style.display = name.includes(q) ? '' : 'none';
+    });
+  };
+  el.querySelectorAll('#usersList .item').forEach(it => {
+    it.onclick = () => openProfileModal(it.dataset.uid);
+  });
+}
+
+/* === ПРОФИЛЬ === */
+async function openProfileModal(uid) {
+  const snap = await getDoc(doc(db,'users',uid));
+  if (!snap.exists()) return;
+  const u = { uid, ...snap.data() };
+  const rq = query(collection(db,'requests'), where('fromUid','==',uid));
+  const rsnap = await getDocs(rq);
+  let total = 0, done = 0;
+  rsnap.forEach(d => { total++; if (d.data().status === 'completed') done++; });
+
+  const isMe = uid === currentProfile.uid;
+  const isAdmin = currentProfile.username.toLowerCase() === MAIN_ADMIN.toLowerCase() || currentProfile.role === 'admin';
+
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `
+    <div class="modal">
+      <button class="close" id="modalClose">×</button>
+      ${avatarHtml(u.username,'xl',isOnline(u.lastSeen))}
+      <div class="pname">${esc(u.username)}</div>
+      <div class="pmeta">
+        ${u.role==='admin'?'админ':(u.isApproved?'участник':'ожидает одобрения')}
+        ${u.banned?' · 🚫 забанен':''}
+        ${isOnline(u.lastSeen)?' · <span style="color:var(--accent)">онлайн</span>':(u.lastSeen?' · был(а) '+fmtDate(u.lastSeen):'')}
+      </div>
+      ${u.createdAt?`<div class="pmeta">с ${fmtDate(u.createdAt)}</div>`:''}
+      <div class="pstats">
+        <div class="pstat"><b>${total}</b><span>заявок</span></div>
+        <div class="pstat"><b>${done}</b><span>выполнено</span></div>
+        <div class="pstat"><b>${total-done}</b><span>в работе</span></div>
+      </div>
+      <div class="pactions" id="pActions"></div>
+    </div>`;
+  document.body.appendChild(bg);
+  bg.querySelector('#modalClose').onclick = () => bg.remove();
+  bg.onclick = (e) => { if (e.target === bg) bg.remove(); };
+
+  const acts = bg.querySelector('#pActions');
+  if (!isMe) {
+    acts.innerHTML += `<button class="btn" id="chatBtn">💬 Написать сообщение</button>`;
+    acts.querySelector('#chatBtn').onclick = () => {
+      bg.remove();
+      const chatId = personalChatId(currentProfile.uid, uid);
+      openChat(chatId, u.username);
+    };
+  }
+  if (isAdmin && !isMe) {
+    if (!u.isApproved) acts.innerHTML += `<button class="btn btn-ghost" id="approveBtn">✅ Одобрить</button>`;
+    if (u.role !== 'admin') acts.innerHTML += `<button class="btn btn-ghost" id="makeAdminBtn">👑 Сделать админом</button>`;
+    else acts.innerHTML += `<button class="btn btn-ghost" id="demoteBtn">Понизить до участника</button>`;
+    if (u.banned) acts.innerHTML += `<button class="btn btn-ghost" id="unbanBtn">🔓 Разбанить</button>`;
+    else acts.innerHTML += `<button class="btn btn-ghost" id="banBtn">🚫 Забанить</button>`;
+    acts.innerHTML += `<button class="btn btn-ghost" id="resetPwdBtn">🔑 Сбросить пароль</button>`;
+  }
+  bg.querySelector('#approveBtn')?.addEventListener('click', async () => { await updateDoc(doc(db,'users',uid),{isApproved:true,role:'user'}); toast('Одобрен','ok'); bg.remove(); route(); });
+  bg.querySelector('#makeAdminBtn')?.addEventListener('click', async () => { if(!confirm('Выдать админку?'))return; await updateDoc(doc(db,'users',uid),{isApproved:true,role:'admin'}); toast('Теперь админ','ok'); bg.remove(); route(); });
+  bg.querySelector('#demoteBtn')?.addEventListener('click', async () => { await updateDoc(doc(db,'users',uid),{role:'user'}); toast('Понижен','ok'); bg.remove(); route(); });
+  bg.querySelector('#banBtn')?.addEventListener('click', async () => { await updateDoc(doc(db,'users',uid),{banned:true}); toast('Забанен','ok'); bg.remove(); route(); });
+  bg.querySelector('#unbanBtn')?.addEventListener('click', async () => { await updateDoc(doc(db,'users',uid),{banned:false}); toast('Разбанен','ok'); bg.remove(); route(); });
+  bg.querySelector('#resetPwdBtn')?.addEventListener('click', async () => {
+    const np = prompt('Новый пароль (минимум 6 символов):');
+    if (!np || np.length < 6) return toast('Слишком короткий','err');
+    toast('Функция в разработке (через Firebase Admin SDK)','err');
+    bg.remove();
+  });
+}
+
+/* === ЧАТЫ === */
+function personalChatId(uid1, uid2) { return [uid1, uid2].sort().join('__'); }
+document.getElementById('chatsBtn').onclick = () => { currentView = 'chats'; openChatsList(); };
+
+async function openChatsList() {
+  app.innerHTML = `${topbarHtml(currentProfile.role==='admin'?'админ':'участник', currentProfile.role==='admin'?'tag-admin':'tag-user')}
+    <div class="tabs">
+      <button data-tab="back">← Назад</button>
+    </div>
+    <div class="section-h">💬 Общий чат</div>
+    <div class="item clickable" id="generalChat">
+      <div class="item-top"><div class="left"><div class="avatar sm" style="background:#3b82f6">#</div><span class="from">Общий чат</span></div></div>
+      <div class="msg" style="font-size:12px;color:var(--dim)">Все участники могут писать</div>
+    </div>
+    <div class="section-h" style="margin-top:18px;">Личные переписки</div>
+    <div id="personalList"><div class="skel skel-item"></div></div>
+  `;
+  bindTopbar();
+  const snap = await getDocs(collection(db,'chats'));
+  const personal = [];
+  snap.forEach(d => {
+    const data = d.data();
+    if (d.id === GENERAL_CHAT_ID) return;
+    if (!data.members || !data.members.includes(currentProfile.uid)) return;
+    personal.push({ id: d.id, ...data });
+  });
+  personal.sort((a,b) => new Date(b.lastAt || 0) - new Date(a.lastAt || 0));
+  const pl = app.querySelector('#personalList');
+  pl.innerHTML = personal.length ? personal.map(c => {
+    const otherUid = c.members.find(m => m !== currentProfile.uid);
+    const otherName = (c.names && c.names[otherUid]) || '???';
+    const unread = unreadCounts[c.id] || 0;
+    return `
+      <div class="item clickable" data-cid="${c.id}" data-name="${esc(otherName)}">
+        <div class="item-top">
+          <div class="left">${avatarHtml(otherName,'sm')}<span class="from">${esc(otherName)}</span>${unread?`<span class="unread-dot"></span>`:''}</div>
+          <span class="when">${c.lastAt?fmtDate(c.lastAt):''}</span>
+        </div>
+        ${c.lastMsg?`<div class="msg" style="font-size:12px">${esc(c.lastMsg.slice(0,80))}</div>`:''}
+      </div>`;
+  }).join('') : '<div class="none">Пока нет личных переписок</div>';
+
+  app.querySelector('#generalChat').onclick = () => openChat(GENERAL_CHAT_ID, 'Общий чат');
+  pl.querySelectorAll('.item').forEach(it => {
+    it.onclick = () => openChat(it.dataset.cid, it.dataset.name);
+  });
+  app.querySelector('.tabs button').onclick = () => { currentView='main'; route(); };
+}
+
+async function openChat(chatId, title) {
+  currentView = 'chat'; activeChatId = chatId; replyTo = null;
+  if (chatId !== GENERAL_CHAT_ID) {
+    const ref = doc(db,'chats',chatId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      const [a,b] = chatId.split('__');
+      const nameA = (await getDoc(doc(db,'users',a))).data()?.username || '?';
+      const nameB = (await getDoc(doc(db,'users',b))).data()?.username || '?';
+      await setDoc(ref, {
+        members: [a,b], names: { [a]: nameA, [b]: nameB },
+        createdAt: new Date().toISOString(), lastAt: new Date().toISOString(), lastMsg: ''
+      });
+    }
+  }
+  viewChat(chatId);
+}
+
+async function viewChat(chatId) {
+  app.innerHTML = `
+    ${topbarHtml('чат','tag-user')}
+    <div class="chat-wrap">
+      <div class="chat-head">
+        <button class="back" id="chatBack">←</button>
+        <div class="title" id="chatTitle">Загрузка…</div>
+      </div>
+      <div class="chat-messages" id="chatMessages"><div class="none">Загрузка…</div></div>
+      <div id="replyBarContainer"></div>
+      <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Сообщение…">
+        <button id="chatSend">→</button>
+      </div>
+    </div>
+  `;
+  bindTopbar();
+  app.querySelector('#chatBack').onclick = () => {
+    currentView = 'main'; activeChatId = null; replyTo = null;
+    if (chatUnsub) { chatUnsub(); chatUnsub = null; }
+    if (chatId === GENERAL_CHAT_ID) { route(); } else { openChatsList(); }
+  };
+  if (chatId === GENERAL_CHAT_ID) {
+    app.querySelector('#chatTitle').textContent = '💬 Общий чат';
+  } else {
+    const snap = await getDoc(doc(db,'chats',chatId));
+    const data = snap.data() || {};
+    const otherUid = data.members?.find(m => m !== currentProfile.uid);
+    const otherName = (data.names && data.names[otherUid]) || '???';
+    app.querySelector('#chatTitle').textContent = otherName;
+  }
+  const msgsRef = collection(db,'chats',chatId,'messages');
+  const q = query(msgsRef, orderBy('at','asc'), limit(200));
+  if (chatUnsub) chatUnsub();
+  chatUnsub = onSnapshot(q, snap => {
+    const box = document.getElementById('chatMessages');
+    if (!box) return;
+    const arr = [];
+    snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+    if (!arr.length) { box.innerHTML = '<div class="none">Пока нет сообщений</div>'; return; }
+    box.innerHTML = arr.map(m => renderChatMessage(m)).join('');
+    box.scrollTop = box.scrollHeight;
+    markChatRead(chatId);
+    bindMsgActions(chatId);
+  });
+  const input = app.querySelector('#chatInput');
+  const send = async () => {
+    const t = input.value.trim(); if (!t) return;
+    input.value = '';
+    try {
+      const msgData = {
+        from: currentProfile.username, fromUid: currentProfile.uid,
+        text: t, at: new Date().toISOString(),
+        reactions: {}
+      };
+      if (replyTo) { msgData.replyTo = replyTo; replyTo = null; renderReplyBar(); }
+      await addDoc(collection(db,'chats',chatId,'messages'), msgData);
+      if (chatId !== GENERAL_CHAT_ID) {
+        const [a,b] = chatId.split('__');
+        const snap2 = await getDoc(doc(db,'chats',chatId));
+        const names = (snap2.data()?.names) || {};
+        names[currentProfile.uid] = currentProfile.username;
+        await updateDoc(doc(db,'chats',chatId), { names, lastAt: new Date().toISOString(), lastMsg: t });
+      }
+      beep();
+    } catch (e) { toast('Ошибка: '+e.code,'err'); }
+  };
+  app.querySelector('#chatSend').onclick = send;
+  input.onkeydown = (e) => { if (e.key === 'Enter') send(); };
+  markChatRead(chatId);
+}
+
+function renderChatMessage(m) {
+  const mine = m.fromUid === currentProfile.uid;
+  const reacted = m.reactions || {};
+  const reactionEntries = Object.entries(reacted).map(([emoji, users]) => {
+    const arr = Array.isArray(users) ? users : [];
+    const myReact = arr.includes(currentProfile.uid);
+    return `<span class="r ${myReact?'mine':''}" data-emoji="${emoji}">${emoji} ${arr.length}</span>`;
+  }).join('');
+  const replyHtml = m.replyTo ? `<div class="msg-reply-quote"><b>${esc(m.replyTo.from)}</b><br>${esc((m.replyTo.text||'').slice(0,80))}</div>` : '';
+  return `<div class="msg-row ${mine?'mine':''}" data-mid="${m.id}">
+    <div class="msg-bubble">
+      ${replyHtml}
+      ${esc(m.text)}
+      <div class="msg-meta">${mine?'':esc(m.from)+' · '}${fmtTime(m.at)}${m.edited?' · изменено':''}</div>
+      ${reactionEntries ? `<div class="msg-reactions">${reactionEntries}</div>` : ''}
+    </div>
+    <div class="msg-actions">
+      <button data-ma="reply" title="Ответить">↩</button>
+      <button data-ma="react" title="Реакция">😀</button>
+      ${mine ? `<button data-ma="edit" title="Изменить">✎</button><button data-ma="del" title="Удалить">🗑</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function bindMsgActions(chatId) {
+  const box = document.getElementById('chatMessages');
+  if (!box) return;
+  box.querySelectorAll('.msg-row').forEach(row => {
+    const mid = row.dataset.mid;
+    row.querySelectorAll('[data-ma]').forEach(b => {
+      b.onclick = async (ev) => {
+        ev.stopPropagation();
+        const act = b.dataset.ma;
+        const ref = doc(db,'chats',chatId,'messages',mid);
+        if (act === 'reply') {
+          const snap = await getDoc(ref);
+          const m = snap.data();
+          replyTo = { from: m.from, text: m.text };
+          renderReplyBar();
+          document.getElementById('chatInput').focus();
+        } else if (act === 'react') {
+          const emoji = prompt('Эмодзи:', '👍');
+          if (!emoji) return;
+          const snap = await getDoc(ref);
+          const m = snap.data();
+          const reactions = m.reactions || {};
+          const users = Array.isArray(reactions[emoji]) ? reactions[emoji] : [];
+          if (users.includes(currentProfile.uid)) reactions[emoji] = users.filter(u => u !== currentProfile.uid);
+          else reactions[emoji] = [...users, currentProfile.uid];
+          if (reactions[emoji] && reactions[emoji].length === 0) delete reactions[emoji];
+          await updateDoc(ref, { reactions });
+        } else if (act === 'edit') {
+          const snap = await getDoc(ref);
+          const m = snap.data();
+          const nt = prompt('Новый текст:', m.text);
+          if (!nt || nt === m.text) return;
+          await updateDoc(ref, { text: nt, edited: true });
+        } else if (act === 'del') {
+          if (!confirm('Удалить сообщение?')) return;
+          await deleteDoc(ref);
+        }
+      };
+    });
+    row.querySelectorAll('.msg-reactions .r').forEach(r => {
+      r.onclick = async () => {
+        const emoji = r.dataset.emoji;
+        const ref = doc(db,'chats',chatId,'messages',mid);
+        const snap = await getDoc(ref);
+        const m = snap.data();
+        const reactions = m.reactions || {};
+        const users = Array.isArray(reactions[emoji]) ? reactions[emoji] : [];
+        if (users.includes(currentProfile.uid)) reactions[emoji] = users.filter(u => u !== currentProfile.uid);
+        else reactions[emoji] = [...users, currentProfile.uid];
+        if (reactions[emoji] && reactions[emoji].length === 0) delete reactions[emoji];
+        await updateDoc(ref, { reactions });
+      };
+    });
+  });
+}
+
+function renderReplyBar() {
+  const c = document.getElementById('replyBarContainer');
+  if (!c) return;
+  if (!replyTo) { c.innerHTML = ''; return; }
+  c.innerHTML = `<div class="reply-bar">
+    <div class="txt">↩ <b>${esc(replyTo.from)}</b>: ${esc(replyTo.text.slice(0,60))}</div>
+    <button class="x" id="cancelReply">×</button>
+  </div>`;
+  document.getElementById('cancelReply').onclick = () => { replyTo = null; renderReplyBar(); };
+}
+
+async function markChatRead(chatId) {
+  if (!currentProfile) return;
+  const ref = doc(db,'chats',chatId);
+  const snap = await getDoc(ref);
+  const data = snap.exists() ? snap.data() : {};
+  const reads = data.reads || {};
+  reads[currentProfile.uid] = Date.now();
+  await setDoc(ref, { reads }, { merge: true }).catch(()=>{});
+  if (chatId === GENERAL_CHAT_ID) unreadGeneral = 0;
+  else unreadCounts[chatId] = 0;
+  updateChatsDot();
+}
+
+/* === ЗАЯВКА (комментарии) === */
+async function openRequest(reqId) {
+  currentView = 'request'; activeChatId = reqId;
+  const reqSnap = await getDoc(doc(db,'requests',reqId));
+  if (!reqSnap.exists()) { currentView='main'; return route(); }
+  const r = { id: reqId, ...reqSnap.data() };
+  const isAdmin = currentProfile.role === 'admin' || currentProfile.username.toLowerCase() === MAIN_ADMIN.toLowerCase();
+  await updateDoc(doc(db,'requests',reqId), isAdmin ? { lastReadByAdmin: new Date().toISOString() } : { lastReadByUser: new Date().toISOString() }).catch(()=>{});
+
+  app.innerHTML = `
+    ${topbarHtml(isAdmin?'админ':'участник', isAdmin?'tag-admin':'tag-user')}
+    <div class="chat-head">
+      <button class="back" id="reqBack">←</button>
+      <div class="title">Заявка от ${esc(r.from)}</div>
+    </div>
+    <div class="item" style="margin-bottom:10px;">
+      <div class="msg">${esc(r.text)}</div>
+      <div>${statusBadgeHtml(r.status)}</div>
+    </div>
+    <div class="section-h">Комментарии</div>
+    <div class="chat-messages" id="reqComments" style="height:40vh;min-height:250px;"></div>
+    <div class="chat-input">
+      <input type="text" id="reqInput" placeholder="Комментарий…">
+      <button id="reqSend">→</button>
+    </div>
+  `;
+  bindTopbar();
+  app.querySelector('#reqBack').onclick = () => { currentView='main'; activeChatId=null; route(); };
+  const box = app.querySelector('#reqComments');
+  const cRef = collection(db,'requests',reqId,'comments');
+  const q = query(cRef, orderBy('at','asc'));
+  onSnapshot(q, snap => {
+    const arr = [];
+    snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+    if (!arr.length) { box.innerHTML = '<div class="none">Пока нет комментариев</div>'; return; }
+    box.innerHTML = arr.map(m => {
+      const mine = m.fromUid === currentProfile.uid;
+      return `<div class="msg-row ${mine?'mine':''}">
+        <div class="msg-bubble">${esc(m.text)}
+          <div class="msg-meta">${mine?'':esc(m.from)+' · '}${fmtTime(m.at)}</div>
+        </div></div>`;
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+  });
+  const input = app.querySelector('#reqInput');
+  app.querySelector('#reqSend').onclick = async () => {
+    const t = input.value.trim(); if (!t) return;
+    input.value = '';
+    await addDoc(cRef, {
+      from: currentProfile.username, fromUid: currentProfile.uid,
+      text: t, at: new Date().toISOString()
+    }).catch(e => toast('Ошибка: '+e.code,'err'));
+  };
+  input.onkeydown = (e) => { if (e.key === 'Enter') app.querySelector('#reqSend').click(); };
+}
+
+/* === АДМИН === */
+async function viewAdmin() {
+  app.innerHTML = `<div class="skel skel-item"></div><div class="skel skel-item"></div>`;
+  const isMainAdmin = currentProfile.username.toLowerCase() === MAIN_ADMIN.toLowerCase();
+  const tabsHtml = `
+    <div class="tabs">
+      <button data-tab="requests" class="${currentTab==='requests'?'active':''}">Заявки</button>
+      <button data-tab="members" class="${currentTab==='members'?'active':''}">Участники</button>
+      ${isMainAdmin?`<button data-tab="dashboard" class="${currentTab==='dashboard'?'active':''}">📊</button>`:''}
+      ${isMainAdmin?`<button data-tab="statuses" class="${currentTab==='statuses'?'active':''}">🏷️</button>`:''}
+      ${isMainAdmin?`<button data-tab="settings" class="${currentTab==='settings'?'active':''}">⚙️</button>`:''}
+    </div>`;
+  app.innerHTML = `${topbarHtml('админ','tag-admin')}${tabsHtml}<div id="tabContent"></div>`;
+  bindTopbar();
+  bindAdminTabs(isMainAdmin);
+
+  if (currentTab === 'members') return renderMembers();
+  if (currentTab === 'dashboard') return renderDashboard();
+  if (currentTab === 'statuses') return renderStatusManager();
+  if (currentTab === 'settings') return renderSettings();
+
+  const usersSnap = await getDocs(collection(db,'users'));
+  const allUsers = [];
+  usersSnap.forEach(d => allUsers.push({ uid:d.id, ...d.data() }));
+  const pendingUsers = allUsers.filter(u => !u.isApproved && u.username.toLowerCase() !== MAIN_ADMIN.toLowerCase());
+
+  const reqSnap = await getDocs(collection(db,'requests'));
+  let allReqs = [];
+  reqSnap.forEach(d => allReqs.push({ id:d.id, ...d.data() }));
+  allReqs.sort((a,b) => new Date(b.at)-new Date(a.at));
+  const filtered = currentFilter === 'all' ? allReqs : allReqs.filter(r => r.status === currentFilter);
+
+  const el = app.querySelector('#tabContent');
+  el.innerHTML = `
+    <div class="section-h">Неодобренные <span class="count">${pendingUsers.length}</span></div>
+    <div id="pendList" style="margin-bottom:18px;">
+      ${pendingUsers.length ? pendingUsers.map(u => `
+        <div class="item">
+          <div class="item-top"><div class="left">${avatarHtml(u.username,'sm')}<span class="from">${esc(u.username)}</span></div></div>
+          <div class="item-actions">
+            <button data-act="approve" data-uid="${u.uid}" class="good">Одобрить</button>
+            <button data-act="make-admin" data-uid="${u.uid}">Сделать админом</button>
+            <button data-act="del" data-uid="${u.uid}" class="danger">Удалить</button>
+          </div>
+        </div>`).join('') : '<div class="none">Нет заявок на одобрение</div>'}
+    </div>
+    <div class="section-h">Все заявки <span class="count">${allReqs.length}</span></div>
+    <div class="row"><input type="text" id="searchReqs" placeholder="Поиск по нику или тексту…"></div>
+    <div class="filters" id="filters">
+      <button data-f="all" class="${currentFilter==='all'?'active':''}">Все</button>
+      ${CUSTOM_STATUSES.map(s => `<button data-f="${s.id}" class="${currentFilter===s.id?'active':''}"><span class="stat-dot" style="background:${s.color}"></span>${esc(s.name)}</button>`).join('')}
+    </div>
+    <div id="reqList">
+      ${filtered.length ? filtered.map(r => itemHtml(r,true)).join('') : '<div class="none">Заявок нет</div>'}
+    </div>
+  `;
+  el.querySelectorAll('#filters button').forEach(b => { b.onclick = () => { currentFilter = b.dataset.f; viewAdmin(); }; });
+  el.querySelector('#searchReqs').oninput = (e) => {
+    const q = e.target.value.toLowerCase();
+    el.querySelectorAll('#reqList .item').forEach(it => {
+      const t = it.textContent.toLowerCase();
+      it.style.display = t.includes(q) ? '' : 'none';
+    });
+  };
+  el.querySelectorAll('#pendList button[data-act]').forEach(b => {
+    b.onclick = async () => {
+      const uid = b.dataset.uid;
+      try {
+        if (b.dataset.act === 'approve') await updateDoc(doc(db,'users',uid),{isApproved:true,role:'user'});
+        else if (b.dataset.act === 'make-admin') await updateDoc(doc(db,'users',uid),{isApproved:true,role:'admin'});
+        else if (b.dataset.act === 'del') { if(!confirm('Удалить?'))return; await deleteDoc(doc(db,'users',uid)); }
+        toast('Готово','ok'); viewAdmin();
+      } catch (e) { toast('Ошибка: '+e.code,'err'); }
+    };
+  });
+  el.querySelectorAll('#reqList .item').forEach(it => {
+    const id = it.dataset.id;
+    it.classList.add('clickable');
+    it.onclick = (ev) => { if (ev.target.closest('button') || ev.target.closest('select') || ev.target.tagName==='INPUT') return; openRequest(id); };
+    it.querySelectorAll('button[data-act]').forEach(b => {
+      b.onclick = async (ev) => {
+        ev.stopPropagation();
+        const act = b.dataset.act; const ref = doc(db,'requests',id);
+        try {
+          if (act==='assign') { const isMine = b.textContent.includes('Отказаться'); await updateDoc(ref,{assignedTo:isMine?null:currentProfile.username}); }
+          else if (act==='set-status') {
+            const sel = it.querySelector('[data-input="status"]');
+            if (sel) await updateDoc(ref,{status: sel.value});
+          }
+          else if (act==='materials') { const v = it.querySelector('[data-input="materials"]').value.trim(); await updateDoc(ref,{status:'materials',materials:v}); }
+          else if (act==='note') { const v = it.querySelector('[data-input="note"]').value.trim(); await updateDoc(ref,{adminNotes:v}); }
+          else if (act==='del') { if(!confirm('Удалить заявку?'))return; await deleteDoc(ref); }
+          viewAdmin();
+        } catch (e) { toast('Ошибка: '+e.code,'err'); }
+      };
+    });
+  });
+}
+
+function bindAdminTabs(isMainAdmin) {
+  app.querySelectorAll('.tabs button').forEach(b => {
+    b.onclick = () => {
+      currentTab = b.dataset.tab;
+      if (currentTab === 'requests' || currentTab === 'members') {
+        if (isMainAdmin) viewAdmin(); else viewUser();
+      } else {
+        viewAdmin();
+      }
+    };
+  });
+}
+
+/* === ДАШБОРД === */
+async function renderDashboard() {
+  const el = app.querySelector('#tabContent');
+  el.innerHTML = `<div class="skel skel-item"></div><div class="skel skel-item"></div>`;
+
+  const usersSnap = await getDocs(collection(db,'users'));
+  const users = [];
+  usersSnap.forEach(d => users.push({ uid: d.id, ...d.data() }));
+
+  const reqSnap = await getDocs(collection(db,'requests'));
+  const reqs = [];
+  reqSnap.forEach(d => reqs.push({ id: d.id, ...d.data() }));
+
+  // Заявки по дням (последние 7 дней)
+  const now = new Date();
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    d.setHours(0,0,0,0);
+    const next = new Date(d); next.setDate(next.getDate()+1);
+    const count = reqs.filter(r => {
+      const t = new Date(r.at).getTime();
+      return t >= d.getTime() && t < next.getTime();
+    }).length;
+    days.push({ label: d.toLocaleDateString('ru-RU',{weekday:'short'}), count });
+  }
+  const maxDay = Math.max(1, ...days.map(d => d.count));
+
+  // Статусы
+  const statusCounts = {};
+  CUSTOM_STATUSES.forEach(s => statusCounts[s.id] = 0);
+  reqs.forEach(r => { if (statusCounts[r.status] !== undefined) statusCounts[r.status]++; });
+
+  // Топ активных
+  const topByUser = {};
+  reqs.forEach(r => { topByUser[r.from] = (topByUser[r.from] || 0) + 1; });
+  const topUsers = Object.entries(topByUser).sort((a,b) => b[1]-a[1]).slice(0,5);
+
+  // Среднее время выполнения
+  const completed = reqs.filter(r => r.status === 'completed');
+  let avgMs = 0;
+  if (completed.length) {
+    const total = completed.reduce((sum,r) => sum + (new Date(r.at).getTime()), 0);
+    avgMs = (Date.now() - (total / completed.length));
+  }
+  const avgDays = Math.round(avgMs / (1000*60*60*24));
+
+  el.innerHTML = `
+    <div class="dash">
+      <div class="dash-card">
+        <h3>Всего</h3>
+        <div class="stat-row"><span class="name">Пользователей</span><span class="num">${users.length}</span></div>
+        <div class="stat-row"><span class="name">Одобрено</span><span class="num">${users.filter(u=>u.isApproved).length}</span></div>
+        <div class="stat-row"><span class="name">Заявок всего</span><span class="num">${reqs.length}</span></div>
+        <div class="stat-row"><span class="name">Выполнено</span><span class="num">${statusCounts.completed || 0}</span></div>
+        <div class="stat-row"><span class="name">Средн. время (дней)</span><span class="num">${avgDays}</span></div>
+      </div>
+
+      <div class="dash-card">
+        <h3>Заявки за 7 дней</h3>
+        <div class="bar-chart">
+          ${days.map(d => `
+            <div class="bar-col">
+              <div class="val">${d.count}</div>
+              <div class="bar" style="height:${Math.round((d.count/maxDay)*80)}px"></div>
+              <div class="lbl">${d.label}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <h3>По статусам</h3>
+        ${CUSTOM_STATUSES.map(s => `
+          <div class="stat-row">
+            <span class="name"><span class="stat-dot" style="background:${s.color};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px"></span>${esc(s.name)}</span>
+            <span class="num">${statusCounts[s.id] || 0}</span>
+          </div>`).join('')}
+      </div>
+
+      <div class="dash-card">
+        <h3>Топ активных</h3>
+        ${topUsers.length ? topUsers.map(([name,count]) => `
+          <div class="stat-row"><span class="name">${esc(name)}</span><span class="num">${count}</span></div>
+        `).join('') : '<div class="none" style="padding:10px 0">Нет данных</div>'}
+      </div>
+    </div>
+  `;
+}
+
+/* === УПРАВЛЕНИЕ СТАТУСАМИ === */
+function renderStatusManager() {
+  const el = app.querySelector('#tabContent');
+  el.innerHTML = `
+    <div class="section-h">Кастомные статусы заявок</div>
+    <div class="info" style="margin-bottom:12px">Добавляй свои статусы. Цвет генерируется автоматически из названия.</div>
+    <div id="statusList">
+      ${CUSTOM_STATUSES.map(s => `
+        <div class="status-item" data-id="${s.id}">
+          <span class="color-dot" style="background:${s.color}"></span>
+          <span class="sname">${esc(s.name)}</span>
+          <button data-del="${s.id}">удалить</button>
+        </div>`).join('')}
+    </div>
+    <div class="row" style="margin-top:16px">
+      <input type="text" id="newStatusName" placeholder="Название нового статуса…">
+    </div>
+    <button class="btn" id="addStatusBtn">Добавить статус</button>
+    <button class="btn btn-ghost" id="resetStatusesBtn" style="margin-top:8px">Сбросить к стандартным</button>
+  `;
+  el.querySelector('#addStatusBtn').onclick = async () => {
+    const name = el.querySelector('#newStatusName').value.trim();
+    if (!name) return toast('Введите название','err');
+    const id = 's_' + name.toLowerCase().replace(/[^a-zа-я0-9]/gi,'_').slice(0,20) + '_' + Date.now().toString(36).slice(-4);
+    const color = avatarColor(name);
+    const updated = [...CUSTOM_STATUSES, { id, name, color }];
+    try { await saveCustomStatuses(updated); toast('Статус добавлен','ok'); renderStatusManager(); }
+    catch (e) { toast('Ошибка: '+e.code,'err'); }
+  };
+  el.querySelectorAll('.status-item button[data-del]').forEach(b => {
+    b.onclick = async () => {
+      const id = b.dataset.del;
+      if (!confirm('Удалить статус?')) return;
+      const updated = CUSTOM_STATUSES.filter(s => s.id !== id);
+      try { await saveCustomStatuses(updated); toast('Удалён','ok'); renderStatusManager(); }
+      catch (e) { toast('Ошибка: '+e.code,'err'); }
+    };
+  });
+  el.querySelector('#resetStatusesBtn').onclick = async () => {
+    if (!confirm('Сбросить к стандартным статусам?')) return;
+    try { await saveCustomStatuses([...DEFAULT_STATUSES]); toast('Сброшено','ok'); renderStatusManager(); }
+    catch (e) { toast('Ошибка: '+e.code,'err'); }
+  };
+}
+
+/* === НАСТРОЙКИ (ЭКСПОРТ/ИМПОРТ) === */
+function renderSettings() {
+  const el = app.querySelector('#tabContent');
+  el.innerHTML = `
+    <div class="section-h">Экспорт базы</div>
+    <div class="info" style="margin-bottom:10px">Скачать все данные (users, requests, chats + вложенные) в один JSON-файл.</div>
+    <button class="btn" id="exportJsonBtn">💾 Скачать backup JSON</button>
+
+    <div class="section-h" style="margin-top:24px">Импорт базы</div>
+    <div class="info" style="margin-bottom:10px;color:#d98a8a">⚠️ Внимание: импорт ЗАМЕНИТ существующие документы с теми же ID. Рекомендуется сначала сделать backup.</div>
+    <input type="file" id="importFile" accept=".json" style="display:none">
+    <button class="btn btn-ghost" id="importJsonBtn">📥 Загрузить backup JSON</button>
+
+    <div class="section-h" style="margin-top:24px">Экспорт CSV</div>
+    <button class="btn btn-ghost" id="exportCsvBtn">📄 Заявки в CSV</button>
+  `;
+  el.querySelector('#exportJsonBtn').onclick = async () => {
+    toast('Готовлю backup…');
+    await exportFullBackup();
+  };
+  el.querySelector('#exportCsvBtn').onclick = async () => {
+    const reqSnap = await getDocs(collection(db,'requests'));
+    const reqs = [];
+    reqSnap.forEach(d => reqs.push({ id: d.id, ...d.data() }));
+    exportCsv(reqs);
+  };
+  el.querySelector('#importJsonBtn').onclick = () => el.querySelector('#importFile').click();
+  el.querySelector('#importFile').onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!confirm('Импорт заменит существующие документы. Продолжить?')) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      await importFullBackup(data);
+    } catch (err) { toast('Ошибка импорта: '+err.message,'err'); }
+  };
+}
+
+async function exportFullBackup() {
+  const backup = { exportedAt: new Date().toISOString(), users: [], requests: [], chats: [], settings: null };
+  const usersSnap = await getDocs(collection(db,'users'));
+  usersSnap.forEach(d => backup.users.push({ id: d.id, ...d.data() }));
+  const reqSnap = await getDocs(collection(db,'requests'));
+  for (const docItem of reqSnap.docs) {
+    const r = { id: docItem.id, ...docItem.data() };
+    const csnap = await getDocs(collection(db,'requests',docItem.id,'comments'));
+    r.comments = [];
+    csnap.forEach(c => r.comments.push({ id: c.id, ...c.data() }));
+    backup.requests.push(r);
+  }
+  const chatsSnap = await getDocs(collection(db,'chats'));
+  for (const docItem of chatsSnap.docs) {
+    const c = { id: docItem.id, ...docItem.data() };
+    const msnap = await getDocs(collection(db,'chats',docItem.id,'messages'));
+    c.messages = [];
+    msnap.forEach(m => c.messages.push({ id: m.id, ...m.data() }));
+    backup.chats.push(c);
+  }
+  const setSnap = await getDoc(doc(db,'settings',SETTINGS_DOC));
+  if (setSnap.exists()) backup.settings = setSnap.data();
+
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup скачан','ok');
+}
+
+async function importFullBackup(data) {
+  if (!confirm('Точно импортировать? Это заменит документы.')) return;
+  let count = 0;
+  if (Array.isArray(data.users)) for (const u of data.users) {
+    const { id, ...rest } = u;
+    await setDoc(doc(db,'users',id), rest);
+    count++;
+  }
+  if (Array.isArray(data.requests)) for (const r of data.requests) {
+    const { id, comments, ...rest } = r;
+    await setDoc(doc(db,'requests',id), rest);
+    count++;
+    if (Array.isArray(comments)) for (const c of comments) {
+      const { id: cid, ...crest } = c;
+      await setDoc(doc(db,'requests',id,'comments',cid), crest);
+      count++;
+    }
+  }
+  if (Array.isArray(data.chats)) for (const c of data.chats) {
+    const { id, messages, ...rest } = c;
+    await setDoc(doc(db,'chats',id), rest);
+    count++;
+    if (Array.isArray(messages)) for (const m of messages) {
+      const { id: mid, ...mrest } = m;
+      await setDoc(doc(db,'chats',id,'messages',mid), mrest);
+      count++;
+    }
+  }
+  if (data.settings) {
+    await setDoc(doc(db,'settings',SETTINGS_DOC), data.settings);
+    await loadCustomStatuses();
+  }
+  toast(`Импортировано: ${count}`,'ok');
+  route();
+}
+
+/* === CSV === */
+function exportCsv(reqs) {
+  const rows = [['Дата','От','Текст','Статус','Исполнитель','Комментарий']];
+  reqs.forEach(r => rows.push([r.at, r.from, (r.text||'').replace(/"/g,'""'), statusName(r.status), r.assignedTo||'', (r.adminNotes||'').replace(/"/g,'""')]));
+  const csv = rows.map(row => row.map(c => `"${c}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href = url; a.download = `requests_${Date.now()}.csv`; a.click(); URL.revokeObjectURL(url);
+  toast('CSV скачан','ok');
+}
+</script>
+</body>
+</html>
